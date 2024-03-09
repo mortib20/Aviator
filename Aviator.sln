@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aviator.Main", "Aviator.Main\Aviator.Main.csproj", "{8254B5DF-369D-4652-94A2-420654AF471B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aviator.DependencyInjection", "Aviator.DependencyInjection\Aviator.DependencyInjection.csproj", "{D24B1962-5935-45DB-913F-125EC596CFEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aviator.Library", "Aviator.Library\Aviator.Library.csproj", "{B76E6A53-DF8D-4601-902B-4E390586EDD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{8254B5DF-369D-4652-94A2-420654AF471B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8254B5DF-369D-4652-94A2-420654AF471B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8254B5DF-369D-4652-94A2-420654AF471B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D24B1962-5935-45DB-913F-125EC596CFEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D24B1962-5935-45DB-913F-125EC596CFEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D24B1962-5935-45DB-913F-125EC596CFEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D24B1962-5935-45DB-913F-125EC596CFEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B76E6A53-DF8D-4601-902B-4E390586EDD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B76E6A53-DF8D-4601-902B-4E390586EDD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B76E6A53-DF8D-4601-902B-4E390586EDD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B76E6A53-DF8D-4601-902B-4E390586EDD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

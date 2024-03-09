@@ -1,13 +1,31 @@
+using Aviator.DependencyInjection;
+using Aviator.Library.Acars;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Prometheus;
+
 namespace Aviator.Main;
 
-public class Program
+public abstract class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        var builder = Host.CreateApplicationBuilder(args);
-        builder.Services.AddHostedService<Worker>();
+        Metrics.SuppressDefaultMetrics();
+        
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(21001));
+        
+        builder.Services.AddSignalR();
+        
+        builder.AddAviator();
 
         var host = builder.Build();
-        host.Run();
+        host.UseRouting();
+
+        host.MapHub<AcarsHub>("/AcarsHub");
+        host.MapMetrics();
+        
+        await host.RunAsync();
     }
 }
