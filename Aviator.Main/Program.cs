@@ -14,16 +14,7 @@ public abstract class Program
         
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddCors(s =>
-        {
-            s.AddDefaultPolicy(p =>
-            {
-                p.SetIsOriginAllowed(_ => true);
-                p.AllowAnyOrigin();
-                p.AllowAnyMethod();
-                p.AllowCredentials();
-            });
-        });
+        builder.Services.AddCors();
         
         builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(21001));
         
@@ -33,7 +24,13 @@ public abstract class Program
 
         var host = builder.Build();
         host.UseRouting();
-        host.UseCors();
+        host.UseCors(s =>
+        {
+            s.AllowAnyHeader();
+            s.AllowAnyMethod();
+            s.SetIsOriginAllowed(_ => true);
+            s.AllowCredentials();
+        });
 
         host.MapHub<AcarsHub>("/hub/acars");
         host.MapMetrics();
