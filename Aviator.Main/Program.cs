@@ -14,6 +14,16 @@ public abstract class Program
         
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddCors(s =>
+        {
+            s.AddDefaultPolicy(p =>
+            {
+                p.AllowCredentials();
+                p.AllowAnyOrigin();
+                p.AllowAnyMethod();
+            });
+        });
+        
         builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(21001));
         
         builder.Services.AddSignalR();
