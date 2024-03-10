@@ -18,9 +18,10 @@ public abstract class Program
         {
             s.AddDefaultPolicy(p =>
             {
-                p.AllowCredentials();
+                p.SetIsOriginAllowed(_ => true);
                 p.AllowAnyOrigin();
                 p.AllowAnyMethod();
+                p.AllowCredentials();
             });
         });
         
@@ -32,6 +33,7 @@ public abstract class Program
 
         var host = builder.Build();
         host.UseRouting();
+        host.UseCors();
 
         host.MapHub<AcarsHub>("/hub/acars");
         host.MapMetrics();
