@@ -19,9 +19,12 @@ namespace Aviator.Library.IO.Output
         {
             if (_client.Connected)
             {
+                _timer.Interval = 1000;
                 return;
             }
 
+            _timer.Interval += TimeSpan.FromSeconds(2).Milliseconds;
+            
             ConnectAsync().Wait();
         }
 

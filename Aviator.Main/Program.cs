@@ -23,7 +23,7 @@ public abstract class Program
         var host = builder.Build();
         host.UseRouting();
 
-        host.MapHub<AcarsHub>("/AcarsHub");
+        host.MapHub<AcarsHub>("/hub/acars");
         host.MapMetrics();
         
         await host.RunAsync();
