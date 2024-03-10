@@ -92,7 +92,7 @@ public class AcarsRouterWorker(IHubContext<AcarsHub> acarsHub, ILogger<AcarsRout
             {
                 AviatorRouterMetrics
                     .ReceivedMessagesTotal
-                    .WithLabels([basicAcars.Freq, basicAcars.Type.ToString()])
+                    .WithLabels([basicAcars.Type, basicAcars.Freq])
                     .Inc();
 
                 acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
