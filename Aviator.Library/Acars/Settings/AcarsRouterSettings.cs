@@ -1,3 +1,4 @@
+using Aviator.Library.IO;
 using Aviator.Library.IO.Input;
 using Aviator.Library.IO.Output;
 
@@ -14,16 +15,9 @@ public class AcarsRouterSettings
 
 public class Outputs
 {
-    public List<Endpoint> Aero { get; set; } = [];
-    public List<Endpoint> Vdl2 { get; set; } = [];
-    public List<Endpoint> Hfdl { get; set; } = [];
-    public List<Endpoint> Acars { get; set; } = [];
-    public List<Endpoint> Iridium { get; set; } = [];
-}
-
-public class Endpoint
-{
-    public OutputProtocol Protocol { get; set; }
-    public string? Address { get; set; }
-    public int Port { get; set; }
+    public List<EndPoint> Aero { get; set; } = [];
+    public List<EndPoint> Vdl2 { get; set; } = [];
+    public List<EndPoint> Hfdl { get; set; } = [];
+    public List<EndPoint> Acars { get; set; } = [];
+    public List<EndPoint> Iridium { get; set; } = [];
 }

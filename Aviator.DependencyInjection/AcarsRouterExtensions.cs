@@ -31,6 +31,8 @@ public static class AcarsRouterExtensions
             };
         });
 
+        services.AddSingleton<AcarsOutputManager>();
+
         // AcarsRouterWorker
         services.AddHostedService<AcarsRouterWorker>();
         

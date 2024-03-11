@@ -14,10 +14,9 @@ using Microsoft.Extensions.Options;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsRouterWorker(IHubContext<AcarsHub> acarsHub, ILogger<AcarsRouterWorker> logger, ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, IInput input) : BackgroundService
+public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<AcarsHub> acarsHub, ILogger<AcarsRouterWorker> logger, ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, IInput input) : BackgroundService
 {
     private readonly AcarsRouterSettings _settings = options.Value;
-    private readonly AcarsRouterOutputManager _outputManager = new(loggerFactory, options);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -43,7 +42,7 @@ public class AcarsRouterWorker(IHubContext<AcarsHub> acarsHub, ILogger<AcarsRout
                 return;
             }
             
-            _outputManager.SendAsync((AcarsType)type, buffer).Wait();
+            outputManager.SendAsync((AcarsType)type, buffer).Wait();
 
             if (!AcarsTypeFinder.HasAcars(json)) return;
             // Ignore all non acars

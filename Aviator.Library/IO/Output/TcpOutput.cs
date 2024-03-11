@@ -6,24 +6,24 @@ using Timer = System.Timers.Timer;
 
 namespace Aviator.Library.IO.Output
 {
-    public class TcpOutput(ILogger logger, DnsEndPoint dnsEndPoint) : AbstractOutput
+    public class TcpOutput(ILogger logger, EndPoint endPoint) : AbstractOutput(endPoint)
     {
         private TcpClient _client = new();
         private readonly Timer _timer = new(TimeSpan.FromSeconds(5));
         private bool _firstMessage = true;
         private bool _disconnected;
 
-        public override bool Connected => _client.Connected;
-
         private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
         {
             if (_client.Connected)
             {
                 _timer.Interval = 1000;
+                StateRunning();
                 return;
             }
 
             _timer.Interval += TimeSpan.FromSeconds(2).Milliseconds;
+            StateConfigured();
             
             ConnectAsync().Wait();
         }
@@ -36,9 +36,10 @@ namespace Aviator.Library.IO.Output
                 {
                     _disconnected = false;
                     _client = new TcpClient();
+                    StateInitialized();
                 }
                 
-                await _client.ConnectAsync(dnsEndPoint.Host, dnsEndPoint.Port, cancellationToken)
+                await _client.ConnectAsync(EndPoint.Host, EndPoint.Port, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (_client.Connected)

@@ -4,25 +4,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Library.IO.Output;
 
-public class UdpOutput(ILogger logger, DnsEndPoint dnsEndPoint) : AbstractOutput
+public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dnsEndPoint)
 {
     private readonly UdpClient _client = new()
     {
-        EnableBroadcast = true
+        EnableBroadcast = true // Because, Why not?!?
     };
 
     private bool _firstMessage = true;
 
-    public override bool Connected => _client.Client.Connected;
-
     public override async Task SendAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
-        if (_firstMessage)
+        try
         {
-            _firstMessage = false;
-            logger.LogInformation("Connected");
-        }
+            if (_firstMessage)
+            {
+                _firstMessage = false;
+                logger.LogInformation("Connected");
+                StateRunning();
+            }
 
-        await _client.SendAsync(buffer, dnsEndPoint.Host, dnsEndPoint.Port, cancellationToken).ConfigureAwait(false);
+            await _client.SendAsync(buffer, EndPoint.Host, EndPoint.Port, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Failed to send, {msg}", e);
+            StateConfigured();
+        }
     }
 }

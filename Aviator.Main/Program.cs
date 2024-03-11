@@ -34,6 +34,7 @@ public abstract class Program
 
         host.MapHub<AcarsHub>("/hub/acars");
         host.MapMetrics();
+        host.AddAviator();
         
         await host.RunAsync();
     }
