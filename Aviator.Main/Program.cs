@@ -31,9 +31,7 @@ public abstract class Program
             s.SetIsOriginAllowed(_ => true);
             s.AllowCredentials();
         });
-
-        host.MapHub<AcarsHub>("/hub/acars");
-        host.MapMetrics();
+        
         host.AddAviator();
         
         await host.RunAsync();

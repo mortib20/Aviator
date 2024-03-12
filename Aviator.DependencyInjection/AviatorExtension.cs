@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prometheus;
 
 namespace Aviator.DependencyInjection;
 
@@ -27,7 +28,17 @@ public static class AviatorExtension
 
     public static WebApplication AddAviator(this WebApplication app)
     {
-
+        app.UseCors(s =>
+        {
+            s.AllowAnyHeader();
+            s.AllowAnyMethod();
+            s.SetIsOriginAllowed(_ => true);
+            s.AllowCredentials();
+        });
+        
+        app.MapMetrics();
+        app.MapHub<AcarsHub>("/hub/acars");
+        
         app.MapGet("/status", ([FromServices] AcarsOutputManager outputManager) =>
         {
             return outputManager.Outputs
@@ -35,8 +46,8 @@ public static class AviatorExtension
                 {
                     EndPoint = new
                     {
-                        Host = output.EndPoint.Host,
-                        Port = output.EndPoint.Port,
+                        output.EndPoint.Host,
+                        output.EndPoint.Port,
                         Protocol = output.EndPoint.Protocol.ToString()
                     },
                     State = output.State.ToString()
