@@ -6,6 +6,7 @@ using Aviator.Library.Acars.Settings;
 using Aviator.Library.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
@@ -16,6 +17,8 @@ public static class AviatorExtension
 {
     public static WebApplicationBuilder AddAviator(this WebApplicationBuilder builder)
     {
+        builder.Configuration.AddJsonFile("aviator.json");
+        
         // AcarsRouterSettings Section
         var acarsRouterSettings = builder.Configuration.GetSection(AcarsRouterSettings.SectionName);
         builder.Services.Configure<AcarsRouterSettings>(acarsRouterSettings);

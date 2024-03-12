@@ -1,0 +1,43 @@
+{
+  "AcarsRouter": {
+    "InputProtocol": "udp",
+    "InputPort": 21000,
+    "Outputs": {
+      "Aero": [
+        {
+          "Protocol": "udp",
+          "Host": "feed.airframes.io",
+          "Port": 5571
+        }
+      ],
+      "Vdl2": [
+        {
+          "Protocol": "Udp",
+          "Host": "feed.airframes.io",
+          "Port": 5552
+        }
+      ],
+      "Hfdl": [
+        {
+          "Protocol": "tcp",
+          "Host": "feed.airframes.io",
+          "Port": 5556
+        }
+      ],
+      "Acars": [
+        {
+          "Protocol": "Udp",
+          "Host": "feed.airframes.io",
+          "Port": 5550
+        }
+      ],
+      "Iridium": [
+        {
+          "Protocol": "Udp",
+          "Host": "192.168.168.1",
+          "Port": 3277
+        }
+      ]
+    }
+  }
+}
