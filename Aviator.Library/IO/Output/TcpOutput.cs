@@ -18,12 +18,11 @@ namespace Aviator.Library.IO.Output
             if (_client.Connected)
             {
                 _timer.Interval = 1000;
-                StateRunning();
+                StateToRunning();
                 return;
             }
 
             _timer.Interval += TimeSpan.FromSeconds(2).Milliseconds;
-            StateConfigured();
             
             ConnectAsync().Wait();
         }
@@ -36,7 +35,7 @@ namespace Aviator.Library.IO.Output
                 {
                     _disconnected = false;
                     _client = new TcpClient();
-                    StateInitialized();
+                    StateToInitialized();
                 }
                 
                 await _client.ConnectAsync(EndPoint.Host, EndPoint.Port, cancellationToken)
@@ -45,11 +44,13 @@ namespace Aviator.Library.IO.Output
                 if (_client.Connected)
                 {
                     logger.LogInformation("Connected");
+                    StateToRunning();
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError("Failed to connect, {message}", ex.Message);
+                StateToStopped();
             }
         }
 
@@ -76,6 +77,7 @@ namespace Aviator.Library.IO.Output
             {
                 logger.LogError("Failed to write, {message}", ex.Message);
                 _disconnected = true;
+                StateToStopped();
             }
         }
     }

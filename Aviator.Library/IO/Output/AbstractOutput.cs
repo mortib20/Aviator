@@ -9,7 +9,7 @@ public abstract class AbstractOutput(EndPoint endPoint) : IOutput
 
     public abstract Task SendAsync(byte[] buffer, CancellationToken cancellationToken = default);
 
-    protected void StateInitialized() => State = OutputState.Initialized;
-    protected void StateConfigured() => State = OutputState.Configured;
-    protected void StateRunning() => State = OutputState.Running;
+    protected void StateToInitialized() => State = OutputState.Initialized;
+    protected void StateToStopped() => State = OutputState.Stopped;
+    protected void StateToRunning() => State = OutputState.Running;
 }

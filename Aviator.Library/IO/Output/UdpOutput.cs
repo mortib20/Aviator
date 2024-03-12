@@ -21,7 +21,7 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dn
             {
                 _firstMessage = false;
                 logger.LogInformation("Connected");
-                StateRunning();
+                StateToRunning();
             }
 
             await _client.SendAsync(buffer, EndPoint.Host, EndPoint.Port, cancellationToken).ConfigureAwait(false);
@@ -29,7 +29,7 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dn
         catch (Exception e)
         {
             logger.LogError("Failed to send, {msg}", e);
-            StateConfigured();
+            StateToStopped();
         }
     }
 }
