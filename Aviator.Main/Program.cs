@@ -1,7 +1,9 @@
+using System.Reflection;
 using Aviator.DependencyInjection;
 using Aviator.Library.Acars;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.OpenApi.Models;
 using Prometheus;
 
 namespace Aviator.Main;
@@ -22,9 +24,18 @@ public abstract class Program
         
         builder.AddAviator();
 
-        var host = builder.Build();
-        host.UseRouting();
-        host.UseCors(s =>
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(s =>
+        {
+            s.SwaggerDoc("v1", new OpenApiInfo { Title = "Aviator API", Version = "v1" });
+        });
+        
+
+        var app = builder.Build();
+        
+        app.UseRouting();
+        
+        app.UseCors(s =>
         {
             s.AllowAnyHeader();
             s.AllowAnyMethod();
@@ -32,8 +43,11 @@ public abstract class Program
             s.AllowCredentials();
         });
         
-        host.AddAviator();
+        app.AddAviator();
+
+        app.UseSwagger();
+        app.UseSwaggerUI(s => s.DocumentTitle = "Aviator API");
         
-        await host.RunAsync();
+        await app.RunAsync();
     }
 }

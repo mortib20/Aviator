@@ -14,8 +14,9 @@ using Microsoft.Extensions.Options;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<AcarsHub> acarsHub, ILogger<AcarsRouterWorker> logger, ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, IInput input) : BackgroundService
+public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<AcarsHub> acarsHub, ILogger<AcarsRouterWorker> logger, IOptions<AcarsRouterSettings> options, IInput input) : BackgroundService
 {
+    private const int MinPacketLength = 100;
     private readonly AcarsRouterSettings _settings = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,6 +28,11 @@ public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<Aca
     {
         try
         {
+            if (buffer.Length < MinPacketLength)
+            {
+                return;
+            }
+            
             var json = JsonNode.Parse(buffer);
             BasicAcars? basicAcars = null;
 
@@ -35,19 +41,20 @@ public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<Aca
                 return;
             }
 
-            var type = AcarsTypeFinder.Detect(json);
+            var acarsType = AcarsTypeFinder.Detect(json);
 
-            if (type is null)
+            if (acarsType is null)
             {
                 return;
             }
             
-            outputManager.SendAsync((AcarsType)type, buffer).Wait();
+            outputManager.SendAsync((AcarsType)acarsType, buffer).Wait();
+            acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(buffer));
 
             if (!AcarsTypeFinder.HasAcars(json)) return;
             // Ignore all non acars
             
-            switch (type)
+            switch (acarsType)
             {
                 case AcarsType.Aero:
                     var jaero = JsonSerializer.Deserialize<Jaero>(buffer);
@@ -87,18 +94,15 @@ public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<Aca
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (basicAcars is not null)
+            if (basicAcars is null) // Dont send null
             {
-                AviatorRouterMetrics
-                    .ReceivedMessagesTotal
-                    .WithLabels([basicAcars.Type, basicAcars.Freq])
-                    .Inc();
-
-                acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
+                return;
             }
             
-            
-            acarsHub.Clients.All.SendAsync("data", System.Text.Encoding.UTF8.GetString(buffer));
+            AviatorRouterMetrics
+                .IncReceivedMessagesTotal(basicAcars);
+
+            acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
         }
         catch (Exception e)
         {
