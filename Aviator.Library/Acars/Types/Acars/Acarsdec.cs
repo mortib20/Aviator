@@ -2,7 +2,6 @@ namespace Aviator.Library.Acars.Types.Acars;
 
 public class Acarsdec
 {
-    public string ack { get; set; }
     public App app { get; set; }
     public string assstat { get; set; }
     public string block_id { get; set; }
