@@ -40,27 +40,27 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
     {
         return new Dictionary<AcarsType, List<IOutput>>()
         {
-            [AcarsType.Aero] = CreateOutputList(outputs.Aero, loggerFactory),
-            [AcarsType.Vdl2] = CreateOutputList(outputs.Vdl2, loggerFactory),
-            [AcarsType.Hfdl] = CreateOutputList(outputs.Hfdl, loggerFactory),
-            [AcarsType.Acars] = CreateOutputList(outputs.Acars, loggerFactory),
-            [AcarsType.Iridium] = CreateOutputList(outputs.Iridium, loggerFactory),
+            [AcarsType.Aero] = CreateOutputList(AcarsType.Aero.ToString(), outputs.Aero, loggerFactory),
+            [AcarsType.Vdl2] = CreateOutputList(AcarsType.Vdl2.ToString(), outputs.Vdl2, loggerFactory),
+            [AcarsType.Hfdl] = CreateOutputList(AcarsType.Hfdl.ToString(), outputs.Hfdl, loggerFactory),
+            [AcarsType.Acars] = CreateOutputList(AcarsType.Acars.ToString(), outputs.Acars, loggerFactory),
+            [AcarsType.Iridium] = CreateOutputList(AcarsType.Iridium.ToString(), outputs.Iridium, loggerFactory),
         };
     }
 
-    private static List<IOutput> CreateOutputList(IEnumerable<EndPoint> endpoints, ILoggerFactory loggerFactory)
+    private static List<IOutput> CreateOutputList(string key, IEnumerable<EndPoint> endpoints, ILoggerFactory loggerFactory)
     {
-        return endpoints.Select(e => CreateOutput(e, loggerFactory)).ToList();
+        return endpoints.Select(e => CreateOutput(key, e, loggerFactory)).ToList();
     }
     
-    private static IOutput CreateOutput(EndPoint endpoint, ILoggerFactory loggerFactory)
+    private static IOutput CreateOutput(string key, EndPoint endpoint, ILoggerFactory loggerFactory)
     {
         if (endpoint.Host is null)
         {
             throw new NullReferenceException("Host cannot be null");
         }
 
-        var endPoint = new EndPoint(endpoint.Protocol, endpoint.Host, endpoint.Port);
+        var endPoint = new EndPoint(key, endpoint.Protocol, endpoint.Host, endpoint.Port);
         
         return endpoint.Protocol switch
         {

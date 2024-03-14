@@ -12,6 +12,9 @@ public static class AviatorRouterMetrics
     
     private static readonly Gauge NoiseLevel = Prometheus.Metrics.CreateGauge("noise_level", help: "Noise Levels", labelNames: ["type", "channel"]);
 
+    private static readonly Gauge ConnectedOutputs =
+        Prometheus.Metrics.CreateGauge("connected_outputs", help: "Status of the outputs", labelNames: ["type", "endpoint"]);
+
     public static void IncReceivedMessagesTotal(BasicAcars basicAcars)
     {
         ReceivedMessagesTotal
@@ -31,5 +34,12 @@ public static class AviatorRouterMetrics
         NoiseLevel
             .WithLabels([basicAcars.Type, basicAcars.Freq])
             .Set(level);
+    }
+
+    public static void SetOutputStatus(string type, string endpoint, bool connected)
+    {
+        ConnectedOutputs
+            .WithLabels([type, endpoint])
+            .Set(connected ? 1 : 0);
     }
 }

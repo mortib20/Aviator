@@ -1,4 +1,4 @@
-using System.Net;
+using Aviator.Library.Metrics;
 
 namespace Aviator.Library.IO.Output;
 
@@ -10,6 +10,15 @@ public abstract class AbstractOutput(EndPoint endPoint) : IOutput
     public abstract Task SendAsync(byte[] buffer, CancellationToken cancellationToken = default);
 
     protected void StateToInitialized() => State = OutputState.Initialized;
-    protected void StateToStopped() => State = OutputState.Stopped;
-    protected void StateToRunning() => State = OutputState.Running;
+    protected void StateToStopped()
+    {
+        State = OutputState.Stopped;
+        AviatorRouterMetrics.SetOutputStatus(EndPoint.Name, EndPoint.ToString(), false);
+    }
+
+    protected void StateToRunning()
+    {
+        State = OutputState.Running;
+        AviatorRouterMetrics.SetOutputStatus(EndPoint.Name, EndPoint.ToString(), true);
+    }
 }
