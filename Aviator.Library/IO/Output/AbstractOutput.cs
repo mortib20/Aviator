@@ -13,12 +13,12 @@ public abstract class AbstractOutput(EndPoint endPoint) : IOutput
     protected void StateToStopped()
     {
         State = OutputState.Stopped;
-        AviatorRouterMetrics.SetOutputStatus(EndPoint.Name, EndPoint.ToString(), false);
+        AviatorRouterMetrics.SetOutputStatus("", EndPoint.ToString(), false);
     }
 
     protected void StateToRunning()
     {
         State = OutputState.Running;
-        AviatorRouterMetrics.SetOutputStatus(EndPoint.Name, EndPoint.ToString(), true);
+        AviatorRouterMetrics.SetOutputStatus("", EndPoint.ToString(), true);
     }
 }
