@@ -29,6 +29,7 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dn
         catch (Exception e)
         {
             logger.LogError("Failed to send, {msg}", e);
+            _firstMessage = false;
             StateToStopped();
         }
     }

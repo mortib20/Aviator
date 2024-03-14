@@ -11,7 +11,6 @@ namespace Aviator.Library.IO.Output
         private TcpClient _client = new();
         private readonly Timer _timer = new(TimeSpan.FromSeconds(5));
         private bool _firstMessage = true;
-        private bool _disconnected;
 
         private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
         {
@@ -24,6 +23,8 @@ namespace Aviator.Library.IO.Output
 
             _timer.Interval += TimeSpan.FromSeconds(2).Milliseconds;
             
+            logger.LogInformation("Reconnecting..., {interval}", TimeSpan.FromMilliseconds(_timer.Interval).ToString());
+            
             ConnectAsync().Wait();
         }
 
@@ -31,12 +32,8 @@ namespace Aviator.Library.IO.Output
         {
             try
             {
-                if (_disconnected)
-                {
-                    _disconnected = false;
-                    _client = new TcpClient();
-                    StateToInitialized();
-                }
+                _client = new TcpClient();
+                StateToInitialized();
                 
                 await _client.ConnectAsync(EndPoint.Host, EndPoint.Port, cancellationToken)
                     .ConfigureAwait(false);
@@ -76,7 +73,6 @@ namespace Aviator.Library.IO.Output
             catch (Exception ex)
             {
                 logger.LogError("Failed to write, {message}", ex.Message);
-                _disconnected = true;
                 StateToStopped();
             }
         }
