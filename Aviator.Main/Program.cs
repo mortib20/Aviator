@@ -15,7 +15,7 @@ public abstract class Program
         Metrics.SuppressDefaultMetrics();
         
         var builder = WebApplication.CreateBuilder(args);
-
+        
         builder.Services.AddCors();
         
         builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(21001));
@@ -48,6 +48,6 @@ public abstract class Program
         app.UseSwagger();
         app.UseSwaggerUI(s => s.DocumentTitle = "Aviator API");
         
-        await app.RunAsync();
+        await app.RunAsync().ConfigureAwait(false);
     }
 }
