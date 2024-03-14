@@ -57,7 +57,7 @@ public class Hfnpdu
 
 public class Acars
 {
-    public string ack { get; set; }
+    public string? ack { get; set; }
     public string blk_id { get; set; }
     public bool crc_ok { get; set; }
     public bool err { get; set; }

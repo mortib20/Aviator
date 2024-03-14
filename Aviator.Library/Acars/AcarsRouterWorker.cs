@@ -14,7 +14,12 @@ using Microsoft.Extensions.Options;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<AcarsHub> acarsHub, ILogger<AcarsRouterWorker> logger, IOptions<AcarsRouterSettings> options, IInput input) : BackgroundService
+public class AcarsRouterWorker(
+    AcarsOutputManager outputManager,
+    IHubContext<AcarsHub> acarsHub,
+    ILogger<AcarsRouterWorker> logger,
+    IOptions<AcarsRouterSettings> options,
+    IInput input) : BackgroundService
 {
     private const int MinPacketLength = 100;
     private readonly AcarsRouterSettings _settings = options.Value;
@@ -28,65 +33,51 @@ public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<Aca
     {
         try
         {
-            if (buffer.Length < MinPacketLength)
-            {
-                return;
-            }
-            
+            if (buffer.Length < MinPacketLength) return;
+
             var json = JsonNode.Parse(buffer);
             BasicAcars? basicAcars = null;
+            double? sigLevel = null;
+            double? noiseLevel = null;
 
-            if (json is null)
-            {
-                return;
-            }
+            if (json is null) return;
 
             var acarsType = AcarsTypeFinder.Detect(json);
 
-            if (acarsType is null)
-            {
-                return;
-            }
-            
+            if (acarsType is null) return;
+
             outputManager.SendAsync((AcarsType)acarsType, buffer).Wait();
             acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(buffer));
 
             if (!AcarsTypeFinder.HasAcars(json)) return;
             // Ignore all non acars
-            
+
             switch (acarsType)
             {
                 case AcarsType.Aero:
                     var jaero = JsonSerializer.Deserialize<Jaero>(buffer);
-                    if (jaero is null)
-                    {
-                        break;
-                    }
+                    if (jaero is null) break;
                     basicAcars = AcarsConverter.ConvertAero(jaero);
                     break;
                 case AcarsType.Vdl2:
                     var vdl2 = JsonSerializer.Deserialize<DumpVdl2>(buffer);
-                    if (vdl2 is null)
-                    {
-                        break;
-                    }
+                    if (vdl2 is null) break;
                     basicAcars = AcarsConverter.ConvertDumpVdl2(vdl2);
+                    sigLevel = vdl2.vdl2.sig_level;
+                    noiseLevel = vdl2.vdl2.noise_level;
                     break;
                 case AcarsType.Hfdl:
                     var hfdl = JsonSerializer.Deserialize<DumpHfdl>(buffer);
-                    if (hfdl is null)
-                    {
-                        break;
-                    }
+                    if (hfdl is null) break;
                     basicAcars = AcarsConverter.ConvertDumpHfdl(hfdl);
+                    sigLevel = hfdl.hfdl.sig_level;
+                    noiseLevel = hfdl.hfdl.noise_level;
                     break;
                 case AcarsType.Acars:
                     var acars = JsonSerializer.Deserialize<Acarsdec>(buffer);
-                    if (acars is null)
-                    {
-                        break;
-                    }
+                    if (acars is null) break;
                     basicAcars = AcarsConverter.ConvertAcarsdec(acars);
+                    sigLevel = acars.level;
                     break;
                 case AcarsType.Iridium:
                     break;
@@ -95,14 +86,16 @@ public class AcarsRouterWorker(AcarsOutputManager outputManager, IHubContext<Aca
             }
 
             if (basicAcars is null) // Dont send null
-            {
                 return;
-            }
-            
+
+            acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
+
             AviatorRouterMetrics
                 .IncReceivedMessagesTotal(basicAcars);
 
-            acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
+            if (sigLevel is not null) AviatorRouterMetrics.AddSigLevel(basicAcars, (double)sigLevel);
+
+            if (noiseLevel is not null) AviatorRouterMetrics.AddNoiseLevel(basicAcars, (double)noiseLevel);
         }
         catch (Exception e)
         {
