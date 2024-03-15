@@ -1,14 +1,9 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Aviator.Library.Acars;
 using Aviator.Library.Acars.Settings;
-using Aviator.Library.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Prometheus;
 
 namespace Aviator.DependencyInjection;
@@ -54,7 +49,7 @@ public static class AviatorExtension
                         Protocol = output.EndPoint.Protocol.ToString()
                     },
                     State = output.State.ToString()
-                }).ToList());;
+                }).ToList());
         });
         
         return app;
