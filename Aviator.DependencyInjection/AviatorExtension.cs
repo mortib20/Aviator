@@ -35,8 +35,14 @@ public static class AviatorExtension
         });
         
         app.MapMetrics();
+        app.MapAviatorStatus();
         app.MapHub<AcarsHub>("/hub/acars");
         
+        return app;
+    }
+
+    public static WebApplication MapAviatorStatus(this WebApplication app)
+    {
         app.MapGet("/status", ([FromServices] AcarsOutputManager outputManager) =>
         {
             return outputManager.Outputs
@@ -51,7 +57,7 @@ public static class AviatorExtension
                     State = output.State.ToString()
                 }).ToList());
         });
-        
+
         return app;
     }
 }

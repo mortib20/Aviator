@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
@@ -12,24 +11,30 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dn
     };
 
     private bool _firstMessage = true;
+    private bool _hadError;
 
     public override async Task SendAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (_firstMessage)
+            if (_firstMessage || _hadError)
             {
                 _firstMessage = false;
+                if (_hadError)
+                {   
+                    _hadError = false;
+                    await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
+                }
                 logger.LogInformation("Connected");
                 StateToRunning();
             }
-
+            
             await _client.SendAsync(buffer, EndPoint.Host, EndPoint.Port, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
             logger.LogError("Failed to send, {msg}", e);
-            _firstMessage = false;
+            _hadError = true;
             StateToStopped();
         }
     }
