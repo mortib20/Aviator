@@ -15,20 +15,6 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
 
     public ImmutableDictionary<AcarsType, List<IOutput>> Outputs => _outputs.ToImmutableDictionary();
 
-    public Dictionary<AcarsType, List<AcarsOutputState>> OutputStates
-    {
-        get
-        {
-            return _outputs
-                .ToDictionary(keyValuePair => keyValuePair.Key, valuePair => valuePair.Value.Select(output =>
-                    new AcarsOutputState
-                    {
-                        EndPoint = output.EndPoint,
-                        State = output.State.ToString()
-                    }).ToList());
-        }
-    }
-
     public async Task SendAsync(AcarsType type, byte[] buffer, CancellationToken cancellationToken = default)
     {
         foreach (var output in _outputs[type]) await output.SendAsync(buffer, cancellationToken).ConfigureAwait(false);

@@ -48,13 +48,15 @@ public static class AviatorExtension
             return outputManager.Outputs
                 .ToDictionary(keyValuePair => keyValuePair.Key, valuePair => valuePair.Value.Select(output => new
                 {
+                    output.Enabled,
+                    State = output.State.ToString(),
+                    output.LastError,
                     EndPoint = new
                     {
                         output.EndPoint.Host,
                         output.EndPoint.Port,
-                        Protocol = output.EndPoint.Protocol.ToString()
-                    },
-                    State = output.State.ToString()
+                        Protocol = output.EndPoint.Protocol.ToString(),
+                    }
                 }).ToList());
         });
 

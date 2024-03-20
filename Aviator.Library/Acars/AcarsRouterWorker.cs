@@ -49,8 +49,8 @@ public class AcarsRouterWorker(
             outputManager.SendAsync((AcarsType)acarsType, buffer).Wait();
             acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(buffer));
 
-            if (!AcarsTypeFinder.HasAcars(json)) return;
             // Ignore all non acars
+            if (!AcarsTypeFinder.HasAcars(json)) return;
 
             switch (acarsType)
             {

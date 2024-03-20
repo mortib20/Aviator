@@ -47,6 +47,7 @@ namespace Aviator.Library.IO.Output
             catch (Exception ex)
             {
                 logger.LogError("Failed to connect, {message}", ex.Message);
+                LastError = DateTime.Now;
                 StateToStopped();
             }
         }
@@ -72,7 +73,8 @@ namespace Aviator.Library.IO.Output
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to write, {message}", ex.Message);
+                logger.LogError("Failed to write, {message}", $"{ex.Message}\n{ex.Source}");
+                LastError = DateTime.Now;
                 StateToStopped();
             }
         }

@@ -31,10 +31,11 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dn
             
             await _client.SendAsync(buffer, EndPoint.Host, EndPoint.Port, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            logger.LogError("Failed to send, {msg}", e);
+            logger.LogError("Failed to send, {msg}", ex.Message);
             _hadError = true;
+            LastError = DateTime.Now;
             StateToStopped();
         }
     }
