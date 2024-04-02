@@ -1,9 +1,13 @@
 using Aviator.Library.Acars;
 using Aviator.Library.Acars.Settings;
+using Aviator.Library.Metrics;
+using Aviator.Library.Metrics.InfluxDB;
+using Aviator.Library.Metrics.Prometheus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Prometheus;
 
 namespace Aviator.DependencyInjection;
@@ -18,6 +22,28 @@ public static class AviatorExtension
         var acarsRouterSettings = builder.Configuration.GetSection(AcarsRouterSettings.SectionName);
         builder.Services.Configure<AcarsRouterSettings>(acarsRouterSettings);
 
+        var metricsList = new List<IAviatorMetrics>()
+        {
+            new PrometheusMetrics()
+        };
+        
+        // InfluxDBConfig Section
+        var influxConfig = builder.Configuration.GetSection("InfluxDB").Get<InfluxDbMetricsConfig>();
+        
+        // Add InfluxDB if found and enabled
+        if (influxConfig is not null && influxConfig.Enabled)
+        {
+            Console.WriteLine("Added InfluxDbMetrics");
+            metricsList.Add(new InfluxDbMetrics(influxConfig));
+        }
+        
+        // Add Metrics List
+        builder.Services.AddSingleton(metricsList);
+        
+        // Add Metrics Writer
+        builder.Services.AddSingleton<AviatorMetrics>();
+        
+        
         // Add AcarsRouter
         builder.Services.AddAcarsRouter();
         

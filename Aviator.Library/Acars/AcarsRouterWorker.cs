@@ -7,6 +7,7 @@ using Aviator.Library.Acars.Types.Jaero;
 using Aviator.Library.Acars.Types.VDL2;
 using Aviator.Library.IO.Input;
 using Aviator.Library.Metrics;
+using Aviator.Library.Metrics.Prometheus;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ namespace Aviator.Library.Acars;
 
 public class AcarsRouterWorker(
     AcarsOutputManager outputManager,
+    AviatorMetrics metrics,
     IHubContext<AcarsHub> acarsHub,
     ILogger<AcarsRouterWorker> logger,
     IOptions<AcarsRouterSettings> options,
@@ -90,12 +92,12 @@ public class AcarsRouterWorker(
 
             acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
 
-            AviatorRouterMetrics
+            metrics
                 .IncReceivedMessagesTotal(basicAcars);
 
-            if (sigLevel is not null) AviatorRouterMetrics.AddSigLevel(basicAcars, (double)sigLevel);
+            if (sigLevel is not null) metrics.AddSigLevel(basicAcars, (double)sigLevel);
 
-            if (noiseLevel is not null) AviatorRouterMetrics.AddNoiseLevel(basicAcars, (double)noiseLevel);
+            if (noiseLevel is not null) metrics.AddNoiseLevel(basicAcars, (double)noiseLevel);
         }
         catch (Exception e)
         {

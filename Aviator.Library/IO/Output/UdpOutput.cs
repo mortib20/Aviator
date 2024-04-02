@@ -1,9 +1,10 @@
 using System.Net.Sockets;
+using Aviator.Library.Metrics;
 using Microsoft.Extensions.Logging;
 
 namespace Aviator.Library.IO.Output;
 
-public class UdpOutput(ILogger logger, EndPoint dnsEndPoint) : AbstractOutput(dnsEndPoint)
+public class UdpOutput(ILogger logger, EndPoint dnsEndPoint, AviatorMetrics metrics) : AbstractOutput(dnsEndPoint, metrics)
 {
     private readonly UdpClient _client = new()
     {

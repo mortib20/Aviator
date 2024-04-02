@@ -1,6 +1,5 @@
 using Aviator.Library.IO;
 using Aviator.Library.IO.Input;
-using Aviator.Library.IO.Output;
 
 namespace Aviator.Library.Acars.Settings;
 

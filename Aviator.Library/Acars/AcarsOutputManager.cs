@@ -2,16 +2,17 @@ using System.Collections.Immutable;
 using Aviator.Library.Acars.Settings;
 using Aviator.Library.IO;
 using Aviator.Library.IO.Output;
+using Aviator.Library.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using EndPoint = Aviator.Library.IO.EndPoint;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options)
+public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, AviatorMetrics metrics)
 {
     private readonly Dictionary<AcarsType, List<IOutput>>
-        _outputs = CreateOutputs(options.Value.Outputs, loggerFactory);
+        _outputs = CreateOutputs(options.Value.Outputs, loggerFactory, metrics);
 
     public ImmutableDictionary<AcarsType, List<IOutput>> Outputs => _outputs.ToImmutableDictionary();
 
@@ -20,25 +21,25 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
         foreach (var output in _outputs[type]) await output.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
     }
 
-    private static Dictionary<AcarsType, List<IOutput>> CreateOutputs(Outputs outputs, ILoggerFactory loggerFactory)
+    private static Dictionary<AcarsType, List<IOutput>> CreateOutputs(Outputs outputs, ILoggerFactory loggerFactory, AviatorMetrics metrics)
     {
         return new Dictionary<AcarsType, List<IOutput>>
         {
-            [AcarsType.Aero] = CreateOutputList(AcarsType.Aero.ToString(), outputs.Aero, loggerFactory),
-            [AcarsType.Vdl2] = CreateOutputList(AcarsType.Vdl2.ToString(), outputs.Vdl2, loggerFactory),
-            [AcarsType.Hfdl] = CreateOutputList(AcarsType.Hfdl.ToString(), outputs.Hfdl, loggerFactory),
-            [AcarsType.Acars] = CreateOutputList(AcarsType.Acars.ToString(), outputs.Acars, loggerFactory),
-            [AcarsType.Iridium] = CreateOutputList(AcarsType.Iridium.ToString(), outputs.Iridium, loggerFactory)
+            [AcarsType.Aero] = CreateOutputList(AcarsType.Aero.ToString(), outputs.Aero, loggerFactory, metrics),
+            [AcarsType.Vdl2] = CreateOutputList(AcarsType.Vdl2.ToString(), outputs.Vdl2, loggerFactory, metrics),
+            [AcarsType.Hfdl] = CreateOutputList(AcarsType.Hfdl.ToString(), outputs.Hfdl, loggerFactory, metrics),
+            [AcarsType.Acars] = CreateOutputList(AcarsType.Acars.ToString(), outputs.Acars, loggerFactory, metrics),
+            [AcarsType.Iridium] = CreateOutputList(AcarsType.Iridium.ToString(), outputs.Iridium, loggerFactory, metrics)
         };
     }
 
     private static List<IOutput> CreateOutputList(string key, IEnumerable<EndPoint> endpoints,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory, AviatorMetrics metrics)
     {
-        return endpoints.Select(e => CreateOutput(key, e, loggerFactory)).ToList();
+        return endpoints.Select(e => CreateOutput(key, e, loggerFactory, metrics)).ToList();
     }
 
-    private static IOutput CreateOutput(string key, EndPoint endpoint, ILoggerFactory loggerFactory)
+    private static IOutput CreateOutput(string key, EndPoint endpoint, ILoggerFactory loggerFactory, AviatorMetrics metrics)
     {
         if (endpoint.Host is null) throw new NullReferenceException("Host cannot be null");
 
@@ -47,9 +48,9 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
         return endpoint.Protocol switch
         {
             IoProtocol.Tcp => new TcpOutput(
-                loggerFactory.CreateLogger($"{typeof(TcpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint),
+                loggerFactory.CreateLogger($"{typeof(TcpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint, metrics),
             IoProtocol.Udp => new UdpOutput(
-                loggerFactory.CreateLogger($"{typeof(UdpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint),
+                loggerFactory.CreateLogger($"{typeof(UdpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint, metrics),
             _ => throw new ArgumentOutOfRangeException(nameof(endpoint.Protocol))
         };
     }

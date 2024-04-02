@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="InfluxDB.Client" Version="4.14.0" />
         <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8"/>
         <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />

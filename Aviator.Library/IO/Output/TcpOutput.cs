@@ -1,12 +1,13 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Timers;
+using Aviator.Library.Metrics;
 using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
 
 namespace Aviator.Library.IO.Output
 {
-    public class TcpOutput(ILogger logger, EndPoint endPoint) : AbstractOutput(endPoint)
+    public class TcpOutput(ILogger logger, EndPoint endPoint, AviatorMetrics metrics) : AbstractOutput(endPoint, metrics)
     {
         private TcpClient _client = new();
         private readonly Timer _timer = new(TimeSpan.FromSeconds(5));
