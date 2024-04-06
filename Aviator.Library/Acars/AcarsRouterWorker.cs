@@ -7,7 +7,6 @@ using Aviator.Library.Acars.Types.Jaero;
 using Aviator.Library.Acars.Types.VDL2;
 using Aviator.Library.IO.Input;
 using Aviator.Library.Metrics;
-using Aviator.Library.Metrics.Prometheus;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -49,7 +48,7 @@ public class AcarsRouterWorker(
             if (acarsType is null) return;
 
             outputManager.SendAsync((AcarsType)acarsType, buffer).Wait();
-            acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(buffer));
+            acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(System.Text.Encoding.UTF8.GetString(buffer)));
 
             // Ignore all non acars
             if (!AcarsTypeFinder.HasAcars(json)) return;
