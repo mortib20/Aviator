@@ -53,6 +53,7 @@ public class Hfnpdu
     public Acars acars { get; set; }
     public bool err { get; set; }
     public Type1 type { get; set; }
+    public Pos? pos { get; set; } 
 }
 
 public class Acars
@@ -70,6 +71,17 @@ public class Acars
     public string msg_num_seq { get; set; }
     public string msg_text { get; set; }
     public string reg { get; set; }
+}
+
+public class Pos
+{
+    public double? lat { get; set; }
+    public double? lon { get; set; }
+
+    public bool HasPos()
+    {
+        return lat is not null && lon is not null;
+    }
 }
 
 public class Media_adv

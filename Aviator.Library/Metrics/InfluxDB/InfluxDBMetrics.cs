@@ -25,16 +25,18 @@ public class InfluxDbMetrics : IAviatorMetrics
         api.WriteRecord($"received_messages_total,type={basicAcars.Type},channel={basicAcars.Freq} value=1", WritePrecision.S, _bucket, _org);
     }
 
-    public void AddSigLevel(BasicAcars basicAcars, double level)
+    public void AddSigLevel(BasicAcars basicAcars, double? level)
     {
+        if (level is null) return;
         using var api = _client.GetWriteApi();
-        api.WriteRecord($"sig_level,type={basicAcars.Type},channel={basicAcars.Freq} value={level.ToString(CultureInfo.InvariantCulture)}", WritePrecision.S, _bucket, _org);
+        api.WriteRecord($"sig_level,type={basicAcars.Type},channel={basicAcars.Freq} value={((double)level).ToString(CultureInfo.InvariantCulture)}", WritePrecision.S, _bucket, _org);
     }
 
-    public void AddNoiseLevel(BasicAcars basicAcars, double level)
+    public void AddNoiseLevel(BasicAcars basicAcars, double? level)
     {
+        if (level is null) return;
         using var api = _client.GetWriteApi();
-        api.WriteRecord($"noise_level,type={basicAcars.Type},channel={basicAcars.Freq} value={level.ToString(CultureInfo.InvariantCulture)}", WritePrecision.S, _bucket, _org);
+        api.WriteRecord($"noise_level,type={basicAcars.Type},channel={basicAcars.Freq} value={((double)level).ToString(CultureInfo.InvariantCulture)}", WritePrecision.S, _bucket, _org);
     }
 
     public void SetOutputStatus(string type, string endpoint, bool connected)

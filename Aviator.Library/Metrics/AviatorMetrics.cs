@@ -12,19 +12,27 @@ public class AviatorMetrics(List<IAviatorMetrics> metricsList) : IAviatorMetrics
         }
     }
 
-    public void AddSigLevel(BasicAcars basicAcars, double level)
+    public void AddSigLevel(BasicAcars? basicAcars, double? level)
     {
+        if (basicAcars is null || level is null)
+        {
+            return;
+        }
         foreach (var aviatorMetrics in metricsList)
         {
-            aviatorMetrics.AddSigLevel(basicAcars, level);
+            aviatorMetrics.AddSigLevel(basicAcars, (double)level);
         }
     }
 
-    public void AddNoiseLevel(BasicAcars basicAcars, double level)
+    public void AddNoiseLevel(BasicAcars? basicAcars, double? level)
     {
+        if (basicAcars is null || level is null)
+        {
+            return;
+        }
         foreach (var aviatorMetrics in metricsList)
         {
-            aviatorMetrics.AddNoiseLevel(basicAcars, level);
+            aviatorMetrics.AddNoiseLevel(basicAcars, (double)level);
         }
     }
 

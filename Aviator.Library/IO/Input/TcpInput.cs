@@ -8,7 +8,7 @@ public class TcpInput(ILogger logger) : AbstractInput(logger)
 {
     private const int BufferSize = 2048;
     
-    public override async Task StartReceiveAsync(int port, Action<byte[]> handler, CancellationToken cancellationToken = default)
+    public override async Task StartReceiveAsync(int port, Action<byte[], CancellationToken> handler, CancellationToken cancellationToken = default)
     {
         await base.StartReceiveAsync(port, handler, cancellationToken).ConfigureAwait(false);
         
@@ -22,7 +22,7 @@ public class TcpInput(ILogger logger) : AbstractInput(logger)
         }
     }
 
-    private async Task HandleClientAsync(Action<byte[]> handler, TcpClient client, CancellationToken cancellationToken = default)
+    private async Task HandleClientAsync(Action<byte[], CancellationToken> handler, TcpClient client, CancellationToken cancellationToken = default)
     {
         await using var stream = client.GetStream();
             
@@ -41,7 +41,7 @@ public class TcpInput(ILogger logger) : AbstractInput(logger)
                 break;    
             }
                 
-            handler.Invoke(receiveBuffer[..length]);
+            handler.Invoke(receiveBuffer[..length], cancellationToken);
         }
     }
 }

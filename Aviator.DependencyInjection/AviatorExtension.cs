@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Prometheus;
 
 namespace Aviator.DependencyInjection;
@@ -22,6 +21,17 @@ public static class AviatorExtension
         var acarsRouterSettings = builder.Configuration.GetSection(AcarsRouterSettings.SectionName);
         builder.Services.Configure<AcarsRouterSettings>(acarsRouterSettings);
 
+        // Add Metrics
+        AddMetrics(builder);
+        
+        // Add AcarsRouter
+        builder.Services.AddAcarsRouter();
+        
+        return builder;
+    }
+
+    private static void AddMetrics(WebApplicationBuilder builder)
+    {
         var metricsList = new List<IAviatorMetrics>()
         {
             new PrometheusMetrics()
@@ -33,7 +43,6 @@ public static class AviatorExtension
         // Add InfluxDB if found and enabled
         if (influxConfig is not null && influxConfig.Enabled)
         {
-            Console.WriteLine("Added InfluxDbMetrics");
             metricsList.Add(new InfluxDbMetrics(influxConfig));
         }
         
@@ -42,12 +51,6 @@ public static class AviatorExtension
         
         // Add Metrics Writer
         builder.Services.AddSingleton<AviatorMetrics>();
-        
-        
-        // Add AcarsRouter
-        builder.Services.AddAcarsRouter();
-        
-        return builder;
     }
 
     public static WebApplication AddAviator(this WebApplication app)

@@ -1,21 +1,28 @@
 using System.Collections.Immutable;
+using System.Text.Json;
 using Aviator.Library.Acars.Settings;
 using Aviator.Library.IO;
 using Aviator.Library.IO.Output;
 using Aviator.Library.Metrics;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using EndPoint = Aviator.Library.IO.EndPoint;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, AviatorMetrics metrics)
+public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, AviatorMetrics metrics, IHubContext<AcarsHub> acarsHub) : IOutputManager
 {
     private readonly Dictionary<AcarsType, List<IOutput>>
         _outputs = CreateOutputs(options.Value.Outputs, loggerFactory, metrics);
 
     public ImmutableDictionary<AcarsType, List<IOutput>> Outputs => _outputs.ToImmutableDictionary();
 
+    public async Task SendAcarsHub(BasicAcars basicAcars, CancellationToken cancellationToken = default)
+    {
+        await acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars), cancellationToken).ConfigureAwait(false);
+    }
+    
     public async Task SendAsync(AcarsType type, byte[] buffer, CancellationToken cancellationToken = default)
     {
         foreach (var output in _outputs[type]) await output.SendAsync(buffer, cancellationToken).ConfigureAwait(false);
@@ -54,4 +61,9 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
             _ => throw new ArgumentOutOfRangeException(nameof(endpoint.Protocol))
         };
     }
+}
+
+public interface IOutputManager
+{
+    public Task SendAsync(AcarsType type, byte[] buffer, CancellationToken cancellationToken = default);
 }

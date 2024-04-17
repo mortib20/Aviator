@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Aviator.Library.Acars.Settings;
@@ -7,7 +8,6 @@ using Aviator.Library.Acars.Types.Jaero;
 using Aviator.Library.Acars.Types.VDL2;
 using Aviator.Library.IO.Input;
 using Aviator.Library.Metrics;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,7 +17,6 @@ namespace Aviator.Library.Acars;
 public class AcarsRouterWorker(
     AcarsOutputManager outputManager,
     AviatorMetrics metrics,
-    IHubContext<AcarsHub> acarsHub,
     ILogger<AcarsRouterWorker> logger,
     IOptions<AcarsRouterSettings> options,
     IInput input) : BackgroundService
@@ -30,16 +29,13 @@ public class AcarsRouterWorker(
         await input.StartReceiveAsync(_settings.InputPort, Handler, stoppingToken).ConfigureAwait(false);
     }
 
-    private void Handler(byte[] buffer)
+    private async void Handler(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try
         {
             if (buffer.Length < MinPacketLength) return;
 
             var json = JsonNode.Parse(buffer);
-            BasicAcars? basicAcars = null;
-            double? sigLevel = null;
-            double? noiseLevel = null;
 
             if (json is null) return;
 
@@ -47,60 +43,68 @@ public class AcarsRouterWorker(
 
             if (acarsType is null) return;
 
-            outputManager.SendAsync((AcarsType)acarsType, buffer).Wait();
-            acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(System.Text.Encoding.UTF8.GetString(buffer)));
+            //await acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(Encoding.UTF8.GetString(buffer)), cancellationToken: cancellationToken);
 
             // Ignore all non acars
             if (!AcarsTypeFinder.HasAcars(json)) return;
 
-            switch (acarsType)
-            {
-                case AcarsType.Aero:
-                    var jaero = JsonSerializer.Deserialize<Jaero>(buffer);
-                    if (jaero is null) break;
-                    basicAcars = AcarsConverter.ConvertAero(jaero);
-                    break;
-                case AcarsType.Vdl2:
-                    var vdl2 = JsonSerializer.Deserialize<DumpVdl2>(buffer);
-                    if (vdl2 is null) break;
-                    basicAcars = AcarsConverter.ConvertDumpVdl2(vdl2);
-                    sigLevel = vdl2.vdl2.sig_level;
-                    noiseLevel = vdl2.vdl2.noise_level;
-                    break;
-                case AcarsType.Hfdl:
-                    var hfdl = JsonSerializer.Deserialize<DumpHfdl>(buffer);
-                    if (hfdl is null) break;
-                    basicAcars = AcarsConverter.ConvertDumpHfdl(hfdl);
-                    sigLevel = hfdl.hfdl.sig_level;
-                    noiseLevel = hfdl.hfdl.noise_level;
-                    break;
-                case AcarsType.Acars:
-                    var acars = JsonSerializer.Deserialize<Acarsdec>(buffer);
-                    if (acars is null) break;
-                    basicAcars = AcarsConverter.ConvertAcarsdec(acars);
-                    sigLevel = acars.level;
-                    break;
-                case AcarsType.Iridium:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var basicAcars = BasicAcarsFromType(buffer, acarsType, out var sigLevel, out var noiseLevel);
 
-            if (basicAcars is null) // Dont send null
+            // Dont send null
+            if (basicAcars is null)
                 return;
 
-            acarsHub.Clients.All.SendAsync("acars", JsonSerializer.Serialize(basicAcars));
+            await outputManager.SendAsync((AcarsType)acarsType, buffer, cancellationToken).ConfigureAwait(false);
+            await outputManager.SendAcarsHub(basicAcars, cancellationToken).ConfigureAwait(false);
 
             metrics
                 .IncReceivedMessagesTotal(basicAcars);
 
-            if (sigLevel is not null) metrics.AddSigLevel(basicAcars, (double)sigLevel);
+            metrics.AddSigLevel(basicAcars, sigLevel);
 
-            if (noiseLevel is not null) metrics.AddNoiseLevel(basicAcars, (double)noiseLevel);
+            metrics.AddNoiseLevel(basicAcars, noiseLevel);
         }
         catch (Exception e)
         {
             logger.LogError("{message}", e);
         }
+    }
+
+    private static BasicAcars? BasicAcarsFromType(byte[] buffer, [DisallowNull] AcarsType? acarsType,
+        out double? sigLevel, out double? noiseLevel)
+    {
+        sigLevel = null;
+        noiseLevel = null;
+        switch (acarsType)
+        {
+            case AcarsType.Aero:
+                var jaero = JsonSerializer.Deserialize<Jaero>(buffer);
+                if (jaero is null) break;
+                return AcarsConverter.ConvertAero(jaero);
+            case AcarsType.Vdl2:
+                var vdl2 = JsonSerializer.Deserialize<DumpVdl2>(buffer);
+                if (vdl2 is null) break;
+                sigLevel = vdl2.vdl2.sig_level;
+                noiseLevel = vdl2.vdl2.noise_level;
+                return AcarsConverter.ConvertDumpVdl2(vdl2);
+            case AcarsType.Hfdl:
+                var hfdl = JsonSerializer.Deserialize<DumpHfdl>(buffer);
+                if (hfdl is null) break;
+                sigLevel = hfdl.hfdl.sig_level;
+                noiseLevel = hfdl.hfdl.noise_level;
+                return AcarsConverter.ConvertDumpHfdl(hfdl);
+            case AcarsType.Acars:
+                var acars = JsonSerializer.Deserialize<Acarsdec>(buffer);
+                if (acars is null) break;
+                sigLevel = acars.level;
+                return AcarsConverter.ConvertAcarsdec(acars);
+            case AcarsType.Iridium:
+                // not implemented
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        return null;
     }
 }

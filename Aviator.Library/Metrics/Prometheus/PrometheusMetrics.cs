@@ -22,18 +22,26 @@ public class PrometheusMetrics : IAviatorMetrics
             .Inc();
     }
 
-    public void AddSigLevel(BasicAcars basicAcars, double level)
+    public void AddSigLevel(BasicAcars basicAcars, double? level)
     {
+        if (level is null)
+        {
+            return;
+        }
         SigLevel
             .WithLabels([basicAcars.Type, basicAcars.Freq])
-            .Set(level);
+            .Set((double)level);
     }
     
-    public void AddNoiseLevel(BasicAcars basicAcars, double level)
+    public void AddNoiseLevel(BasicAcars basicAcars, double? level)
     {
+        if (level is null)
+        {
+            return;
+        }
         NoiseLevel
             .WithLabels([basicAcars.Type, basicAcars.Freq])
-            .Set(level);
+            .Set((double)level);
     }
 
     public void SetOutputStatus(string type, string endpoint, bool connected)
