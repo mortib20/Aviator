@@ -6,10 +6,7 @@ namespace Aviator.Library.IO.Output;
 
 public class UdpOutput(ILogger logger, EndPoint dnsEndPoint, AviatorMetrics metrics) : AbstractOutput(dnsEndPoint, metrics)
 {
-    private readonly UdpClient _client = new()
-    {
-        EnableBroadcast = true // Because, Why not?!?
-    };
+    private readonly UdpClient _client = new();
 
     private bool _firstMessage = true;
     private bool _hadError;
@@ -34,7 +31,7 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint, AviatorMetrics metr
         }
         catch (Exception ex)
         {
-            logger.LogError("Failed to send, {msg}", ex.Message);
+            logger.LogError(ex, "Failed to send");
             _hadError = true;
             LastError = DateTime.Now;
             StateToStopped();

@@ -6,7 +6,7 @@ using Aviator.Library.Acars.Types.VDL2;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsConverter
+public abstract class AcarsConverter
 {
     public static BasicAcars ConvertAero(Jaero aero)
     {

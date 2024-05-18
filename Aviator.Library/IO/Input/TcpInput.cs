@@ -27,7 +27,7 @@ public class TcpInput(ILogger logger) : AbstractInput(logger)
         await using var stream = client.GetStream();
             
         var remoteEndpoint = client.Client.RemoteEndPoint?.ToString();
-        logger.LogInformation("{client} connected", remoteEndpoint);
+        logger.LogInformation("{Client} connected", remoteEndpoint);
 
         while (client.Connected)
         {
@@ -36,7 +36,7 @@ public class TcpInput(ILogger logger) : AbstractInput(logger)
                 
             if (length == 0 || !client.Connected)
             {
-                logger.LogInformation("{client} connection closed", remoteEndpoint);
+                logger.LogInformation("{Client} connection closed", remoteEndpoint);
                 client.Close();
                 break;    
             }

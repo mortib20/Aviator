@@ -48,7 +48,7 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
 
     private static IOutput CreateOutput(string key, EndPoint endpoint, ILoggerFactory loggerFactory, AviatorMetrics metrics)
     {
-        if (endpoint.Host is null) throw new NullReferenceException("Host cannot be null");
+        if (endpoint.Host is null) throw new ArgumentNullException(endpoint.Host);
 
         var endPoint = new EndPoint(endpoint.Protocol, endpoint.Host, endpoint.Port) { Name = key };
 
@@ -58,7 +58,7 @@ public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRout
                 loggerFactory.CreateLogger($"{typeof(TcpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint, metrics),
             IoProtocol.Udp => new UdpOutput(
                 loggerFactory.CreateLogger($"{typeof(UdpOutput).FullName}:{endPoint.Host}:{endPoint.Port}"), endPoint, metrics),
-            _ => throw new ArgumentOutOfRangeException(nameof(endpoint.Protocol))
+            _ => throw new ArgumentOutOfRangeException(endpoint.Protocol.ToString())
         };
     }
 }

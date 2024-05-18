@@ -43,8 +43,6 @@ public class AcarsRouterWorker(
 
             if (acarsType is null) return;
 
-            //await acarsHub.Clients.All.SendAsync("raw", JsonSerializer.Serialize(Encoding.UTF8.GetString(buffer)), cancellationToken: cancellationToken);
-
             // Ignore all non acars
             if (!AcarsTypeFinder.HasAcars(json)) return;
 
@@ -66,7 +64,7 @@ public class AcarsRouterWorker(
         }
         catch (Exception e)
         {
-            logger.LogError("{message}", e);
+            logger.LogError(e, "Error occured");
         }
     }
 
@@ -102,7 +100,7 @@ public class AcarsRouterWorker(
                 // not implemented
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(acarsType.ToString());
         }
 
         return null;

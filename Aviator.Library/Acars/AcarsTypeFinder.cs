@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsTypeFinder
+public abstract class AcarsTypeFinder
 {
     public static AcarsType? Detect(JsonNode json)
     {
@@ -59,7 +59,7 @@ public class AcarsTypeFinder
 
     public static bool HasAcars(JsonNode json)
     {
-        return !!(json["vdl2"]?["avlc"]?["acars"] is not null || json["hfdl"]?["lpdu"]?["hfnpdu"]?["acars"] is not null ||
-                  json["isu"]?["acars"] is not null || json["text"] is not null);
+        return json["vdl2"]?["avlc"]?["acars"] is not null || json["hfdl"]?["lpdu"]?["hfnpdu"]?["acars"] is not null ||
+               json["isu"]?["acars"] is not null || json["text"] is not null;
     }
 }
