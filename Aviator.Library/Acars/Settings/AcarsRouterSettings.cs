@@ -8,8 +8,8 @@ public class AcarsRouterSettings
     public static readonly string SectionName = "AcarsRouter";
     public int InputPort { get; set; }
     public InputProtocol InputProtocol { get; set; }
-    
-    public Outputs Outputs { get; set; }
+
+    public Dictionary<string, List<EndPoint>> Outputs { get; set; } = [];
 }
 
 public class Outputs

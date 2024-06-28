@@ -37,4 +37,11 @@ public class UdpOutput(ILogger logger, EndPoint dnsEndPoint, AviatorMetrics metr
             StateToStopped();
         }
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        _client.Close();
+        _client.Dispose();
+        base.Dispose(disposing);
+    }
 }

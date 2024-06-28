@@ -4,15 +4,15 @@ namespace Aviator.Library.Metrics;
 
 public class AviatorMetrics(List<IAviatorMetrics> metricsList) : IAviatorMetrics
 {
-    public void IncReceivedMessagesTotal(BasicAcars basicAcars)
+    public void IncreaseMessagesTotal(BasicAcars basicAcars)
     {
         foreach (var aviatorMetrics in metricsList)
         {
-            aviatorMetrics.IncReceivedMessagesTotal(basicAcars);
+            aviatorMetrics.IncreaseMessagesTotal(basicAcars);
         }
     }
 
-    public void AddSigLevel(BasicAcars? basicAcars, double? level)
+    public void AddSignalLevel(BasicAcars? basicAcars, double? level)
     {
         if (basicAcars is null || level is null)
         {
@@ -20,7 +20,7 @@ public class AviatorMetrics(List<IAviatorMetrics> metricsList) : IAviatorMetrics
         }
         foreach (var aviatorMetrics in metricsList)
         {
-            aviatorMetrics.AddSigLevel(basicAcars, (double)level);
+            aviatorMetrics.AddSignalLevel(basicAcars, (double)level);
         }
     }
 
@@ -30,17 +30,18 @@ public class AviatorMetrics(List<IAviatorMetrics> metricsList) : IAviatorMetrics
         {
             return;
         }
+        
         foreach (var aviatorMetrics in metricsList)
         {
             aviatorMetrics.AddNoiseLevel(basicAcars, (double)level);
         }
     }
 
-    public void SetOutputStatus(string type, string endpoint, bool connected)
+    public void SetOutputStatus(string endpoint, bool connected)
     {
         foreach (var aviatorMetrics in metricsList)
         {
-            aviatorMetrics.SetOutputStatus(type, endpoint, connected);
+            aviatorMetrics.SetOutputStatus(endpoint, connected);
         }
     }
 }

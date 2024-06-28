@@ -56,9 +56,9 @@ public class AcarsRouterWorker(
             await outputManager.SendAcarsHub(basicAcars, cancellationToken).ConfigureAwait(false);
 
             metrics
-                .IncReceivedMessagesTotal(basicAcars);
+                .IncreaseMessagesTotal(basicAcars);
 
-            metrics.AddSigLevel(basicAcars, sigLevel);
+            metrics.AddSignalLevel(basicAcars, sigLevel);
 
             metrics.AddNoiseLevel(basicAcars, noiseLevel);
         }

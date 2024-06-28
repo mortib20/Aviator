@@ -4,8 +4,8 @@ namespace Aviator.Library.Metrics;
 
 public interface IAviatorMetrics
 {
-    public void IncReceivedMessagesTotal(BasicAcars basicAcars);
-    public void AddSigLevel(BasicAcars basicAcars, double? level);
+    public void IncreaseMessagesTotal(BasicAcars basicAcars);
+    public void AddSignalLevel(BasicAcars basicAcars, double? level);
     public void AddNoiseLevel(BasicAcars basicAcars, double? level);
-    public void SetOutputStatus(string type, string endpoint, bool connected);
+    public void SetOutputStatus(string endpoint, bool connected);
 }

@@ -4,5 +4,6 @@ public enum OutputState
 {
     Initialized,
     Running,
-    Stopped
+    Stopped,
+    Disposed
 }

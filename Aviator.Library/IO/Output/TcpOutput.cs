@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Sockets;
 using System.Timers;
 using Aviator.Library.Metrics;
@@ -47,7 +46,7 @@ public class TcpOutput(ILogger logger, EndPoint endPoint, AviatorMetrics metrics
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to connect");
+            logger.LogError(ex, "Failed to connect or write");
             LastError = DateTime.Now;
             StateToStopped();
         }
@@ -78,5 +77,12 @@ public class TcpOutput(ILogger logger, EndPoint endPoint, AviatorMetrics metrics
             LastError = DateTime.Now;
             StateToStopped();
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _client.Close();
+        _client.Dispose();
+        base.Dispose(disposing);
     }
 }

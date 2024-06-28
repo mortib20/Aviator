@@ -19,13 +19,13 @@ public class InfluxDbMetrics : IAviatorMetrics
     private readonly string _bucket;
     private readonly InfluxDBClient _client;
     
-    public void IncReceivedMessagesTotal(BasicAcars basicAcars)
+    public void IncreaseMessagesTotal(BasicAcars basicAcars)
     {
         using var api = _client.GetWriteApi();
         api.WriteRecord($"received_messages_total,type={basicAcars.Type},channel={basicAcars.Freq} value=1", WritePrecision.S, _bucket, _org);
     }
 
-    public void AddSigLevel(BasicAcars basicAcars, double? level)
+    public void AddSignalLevel(BasicAcars basicAcars, double? level)
     {
         if (level is null) return;
         using var api = _client.GetWriteApi();
@@ -39,7 +39,7 @@ public class InfluxDbMetrics : IAviatorMetrics
         api.WriteRecord($"noise_level,type={basicAcars.Type},channel={basicAcars.Freq} value={((double)level).ToString(CultureInfo.InvariantCulture)}", WritePrecision.S, _bucket, _org);
     }
 
-    public void SetOutputStatus(string type, string endpoint, bool connected)
+    public void SetOutputStatus(string endpoint, bool connected)
     {
         using var api = _client.GetWriteApi();
         api.WriteRecord($"connected_outputs,endpoint={endpoint} value={(connected ? "1" : "0")}", WritePrecision.S, _bucket, _org);

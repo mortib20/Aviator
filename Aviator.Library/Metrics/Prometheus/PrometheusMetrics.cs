@@ -5,30 +5,30 @@ namespace Aviator.Library.Metrics.Prometheus;
 
 public class PrometheusMetrics : IAviatorMetrics
 {
-    private static readonly Counter ReceivedMessagesTotal = global::Prometheus.Metrics.CreateCounter("received_messages_total", help: "Total received messages", labelNames:
-        ["type", "channel"]);
+    private static readonly Counter MessagesTotal = 
+        global::Prometheus.Metrics.CreateCounter("aviator_messages_total", "Total received messages", "type", "channel");
 
-    private static readonly Gauge SigLevel = global::Prometheus.Metrics.CreateGauge("sig_level", help: "Signal Levels", labelNames: ["type", "channel"]);
+    private static readonly Gauge SignalLevel = global::Prometheus.Metrics.CreateGauge("aviator_signal_level", "Signal Levels", "type", "channel");
     
-    private static readonly Gauge NoiseLevel = global::Prometheus.Metrics.CreateGauge("noise_level", help: "Noise Levels", labelNames: ["type", "channel"]);
+    private static readonly Gauge NoiseLevel = global::Prometheus.Metrics.CreateGauge("aviator_noise_level", "Noise Levels", "type", "channel");
 
     private static readonly Gauge ConnectedOutputs =
-        global::Prometheus.Metrics.CreateGauge("connected_outputs", help: "Status of the outputs", labelNames: ["type", "endpoint"]);
+        global::Prometheus.Metrics.CreateGauge("aviator_connected_outputs", "Output Status", "endpoint");
 
-    public void IncReceivedMessagesTotal(BasicAcars basicAcars)
+    public void IncreaseMessagesTotal(BasicAcars basicAcars)
     {
-        ReceivedMessagesTotal
+        MessagesTotal
             .WithLabels([basicAcars.Type, basicAcars.Freq])
             .Inc();
     }
 
-    public void AddSigLevel(BasicAcars basicAcars, double? level)
+    public void AddSignalLevel(BasicAcars basicAcars, double? level)
     {
         if (level is null)
         {
             return;
         }
-        SigLevel
+        SignalLevel
             .WithLabels([basicAcars.Type, basicAcars.Freq])
             .Set((double)level);
     }
@@ -44,10 +44,10 @@ public class PrometheusMetrics : IAviatorMetrics
             .Set((double)level);
     }
 
-    public void SetOutputStatus(string type, string endpoint, bool connected)
+    public void SetOutputStatus(string endpoint, bool connected)
     {
         ConnectedOutputs
-            .WithLabels([type, endpoint])
+            .WithLabels([endpoint])
             .Set(connected ? 1 : 0);
     }
 }

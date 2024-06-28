@@ -38,7 +38,9 @@ public static class AviatorExtension
         };
         
         // InfluxDBConfig Section
-        var influxConfig = builder.Configuration.GetSection("InfluxDB").Get<InfluxDbMetricsConfig>();
+        var influxConfig = builder.Configuration
+            .GetSection(InfluxDbMetricsConfig.SectionName)
+            .Get<InfluxDbMetricsConfig>();
         
         // Add InfluxDB if found and enabled
         if (influxConfig is not null && influxConfig.Enabled)
@@ -70,25 +72,41 @@ public static class AviatorExtension
         return app;
     }
 
-    public static WebApplication MapAviatorStatus(this WebApplication app)
+    private static WebApplication MapAviatorStatus(this WebApplication app)
     {
         app.MapGet("/status", ([FromServices] AcarsOutputManager outputManager) =>
         {
             return outputManager.Outputs
-                .ToDictionary(keyValuePair => keyValuePair.Key, valuePair => valuePair.Value.Select(output => new
-                {
-                    output.Enabled,
-                    State = output.State.ToString(),
-                    output.LastError,
-                    EndPoint = new
+                .ToDictionary(keyValuePair => keyValuePair.Key, valuePair => valuePair.Value.Select(output => new OutputStatus
                     {
-                        output.EndPoint.Host,
-                        output.EndPoint.Port,
-                        Protocol = output.EndPoint.Protocol.ToString(),
-                    }
-                }).ToList());
+                        Enabled = output.Enabled,
+                        State = output.State.ToString(),
+                        LastErrorDateTime = output.LastError,
+                        Endpoint = new OutputStatusEndpoint
+                        {
+                            Host = output.EndPoint.Host,
+                            Port = output.EndPoint.Port,
+                            Protocol = output.EndPoint.Protocol.ToString()
+                        }
+                    })
+                    .ToList());
         });
 
         return app;
     }
+}
+
+internal class OutputStatus
+{
+    public bool Enabled { get; set; }
+    public string? State { get; set; }
+    public DateTime? LastErrorDateTime { get; set; }
+    public OutputStatusEndpoint? Endpoint { get; set; }
+}
+
+internal class OutputStatusEndpoint
+{
+    public string? Host { get; set; }
+    public int Port { get; set; }
+    public string Protocol { get; set; }
 }

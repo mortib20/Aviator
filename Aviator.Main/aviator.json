@@ -45,6 +45,6 @@
     "Url": "http://192.168.168.1:8086",
     "Org": "aviator",
     "Bucket": "aviator",
-    "ApiToken": ""
+    "ApiToken": "someshit"
   }
 }
