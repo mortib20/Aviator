@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Prometheus;
 
 namespace Aviator.DependencyInjection;
@@ -45,7 +46,7 @@ public static class AviatorExtension
         // Add InfluxDB if found and enabled
         if (influxConfig is not null && influxConfig.Enabled)
         {
-            metricsList.Add(new InfluxDbMetrics(influxConfig));
+            metricsList.Add(new InfluxDbMetrics(influxConfig, builder.Services.BuildServiceProvider().GetRequiredService<ILogger<InfluxDbMetrics>>()));
         }
         
         // Add Metrics List
