@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Aviator.Library.Acars.Settings;
+using Aviator.Library.Acars.Config;
 using Aviator.Library.Acars.Types.Acars;
 using Aviator.Library.Acars.Types.Hfdl;
 using Aviator.Library.Acars.Types.Jaero;
 using Aviator.Library.Acars.Types.VDL2;
+using Aviator.Library.Database;
+using Aviator.Library.Database.Types;
 using Aviator.Library.IO.Input;
 using Aviator.Library.Metrics;
 using Microsoft.Extensions.Hosting;
@@ -17,16 +19,17 @@ namespace Aviator.Library.Acars;
 public class AcarsRouterWorker(
     AcarsOutputManager outputManager,
     AviatorMetrics metrics,
+    CouchDbContext couchDbContext,
     ILogger<AcarsRouterWorker> logger,
-    IOptions<AcarsRouterSettings> options,
+    IOptions<AcarsRouterConfig> options,
     IInput input) : BackgroundService
 {
     private const int MinPacketLength = 100;
-    private readonly AcarsRouterSettings _settings = options.Value;
+    private readonly AcarsRouterConfig _config = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await input.StartReceiveAsync(_settings.InputPort, Handler, stoppingToken).ConfigureAwait(false);
+        await input.StartReceiveAsync(_config.InputPort, Handler, stoppingToken).ConfigureAwait(false);
     }
 
     private async void Handler(byte[] buffer, CancellationToken cancellationToken = default)
@@ -54,6 +57,21 @@ public class AcarsRouterWorker(
 
             await outputManager.SendAsync((AcarsType)acarsType, buffer, cancellationToken).ConfigureAwait(false);
             await outputManager.SendAcarsHub(basicAcars, cancellationToken).ConfigureAwait(false);
+
+            var couch = new BasicAcarsCouch
+            {
+                Type = basicAcars.Type,
+                Station = basicAcars.Station,
+                Freq = basicAcars.Freq,
+                Label = basicAcars.Label,
+                Text = basicAcars.Text,
+                Reg = basicAcars.Reg,
+                Flight = basicAcars.Flight,
+                Addr = basicAcars.Addr,
+                Timestamp = basicAcars.Timestamp
+            };
+
+            await couchDbContext.BasicAcars.AddAsync(couch, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             metrics
                 .IncreaseMessagesTotal(basicAcars);

@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
-using Aviator.Library.Acars.Settings;
+using Aviator.Library.Acars.Config;
 using Aviator.Library.IO;
 using Aviator.Library.IO.Output;
 using Aviator.Library.Metrics;
@@ -11,7 +11,7 @@ using EndPoint = Aviator.Library.IO.EndPoint;
 
 namespace Aviator.Library.Acars;
 
-public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterSettings> options, AviatorMetrics metrics, IHubContext<AcarsHub> acarsHub) : IOutputManager
+public class AcarsOutputManager(ILoggerFactory loggerFactory, IOptions<AcarsRouterConfig> options, AviatorMetrics metrics, IHubContext<AcarsHub> acarsHub) : IOutputManager
 {
     private readonly JsonSerializerOptions _jsonSerializerOptions = new();
 

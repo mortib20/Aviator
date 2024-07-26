@@ -1,8 +1,11 @@
 using Aviator.Library.Acars;
-using Aviator.Library.Acars.Settings;
+using Aviator.Library.Acars.Config;
+using Aviator.Library.Database;
+using Aviator.Library.Database.Config;
 using Aviator.Library.Metrics;
 using Aviator.Library.Metrics.InfluxDB;
 using Aviator.Library.Metrics.Prometheus;
+using CouchDB.Driver.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +22,18 @@ public static class AviatorExtension
         builder.Configuration.AddJsonFile("aviator.json");
         
         // AcarsRouterSettings Section
-        var acarsRouterSettings = builder.Configuration.GetSection(AcarsRouterSettings.SectionName);
-        builder.Services.Configure<AcarsRouterSettings>(acarsRouterSettings);
+        var acarsRouterSettings = builder.Configuration.GetSection(AcarsRouterConfig.SectionName);
+        builder.Services.Configure<AcarsRouterConfig>(acarsRouterSettings);
 
+        // CouchDbConfig
+        var couchDbConfig = builder.Configuration.GetSection(CouchDbConfig.SectionName).Get<CouchDbConfig>();
+
+        builder.Services.AddCouchContext<CouchDbContext>(optionsBuilder => 
+            optionsBuilder
+                .UseEndpoint(couchDbConfig.Endpoint)
+                .UseBasicAuthentication(username: couchDbConfig.Username, password: couchDbConfig.Password)
+                .EnsureDatabaseExists());
+        
         // Add Metrics
         AddMetrics(builder);
         

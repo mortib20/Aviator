@@ -44,7 +44,12 @@
     "Enabled": true,
     "Url": "http://192.168.168.1:8086",
     "Org": "aviator",
-    "Bucket": "aviator",
-    "ApiToken": "someshit"
+    "Bucket": "testing",
+    "ApiToken": "CLaMaAMp6DnTVotPfShut7YEyJndZCvV0GDV5HSC1hj5vX2Jo-KUTjW4IAkZDcYIA2RRJwRS2XNdBq23hUWQog=="
+  },
+  "CouchDB": {
+    "Endpoint": "http://192.168.168.1:5984",
+    "Username": "admin",
+    "Password": ""
   }
 }

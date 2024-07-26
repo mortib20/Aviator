@@ -1,9 +1,9 @@
 using Aviator.Library.IO;
 using Aviator.Library.IO.Input;
 
-namespace Aviator.Library.Acars.Settings;
+namespace Aviator.Library.Acars.Config;
 
-public class AcarsRouterSettings
+public class AcarsRouterConfig
 {
     public static readonly string SectionName = "AcarsRouter";
     public int InputPort { get; set; }

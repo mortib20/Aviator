@@ -1,5 +1,5 @@
 using Aviator.Library.Acars;
-using Aviator.Library.Acars.Settings;
+using Aviator.Library.Acars.Config;
 using Aviator.Library.IO.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ public static class AcarsRouterExtensions
         // AcarsRouterInput
         services.AddSingleton<IInput>(s =>
         {
-            var settings = s.GetService<IOptions<AcarsRouterSettings>>()?.Value;
+            var settings = s.GetService<IOptions<AcarsRouterConfig>>()?.Value;
 
             return settings?.InputProtocol switch
             {
