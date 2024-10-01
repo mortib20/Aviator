@@ -6,8 +6,5 @@ public class EndpointConfig
     public string Host { get; set; } = string.Empty;
     public int Port { get; set; }
 
-    public override string ToString()
-    {
-        return $"{Protocol}://{Host}:{Port}";
-    }
+    public override string ToString() => $"{Protocol}://{Host}:{Port}";
 }

@@ -2,18 +2,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Network.Input;
 
-public class InputBuilder(ILoggerFactory loggerFactory)
+public class InputBuilder(ILoggerFactory loggerFactory) : IBuilder<IInput>
 {
-    private UdpInput CreateUdpInput(string host, int port)
-    {
-        return new UdpInput(loggerFactory.CreateLogger<UdpInput>(), host, port);
-    }
+    private static UdpInput CreateUdpInput(string host, int port) => new(host, port);
 
-    public BaseInput Create(Protocol protocol, string host, int port)
+    private TcpInput CreateTcpInput(string host, int port) => new(loggerFactory.CreateLogger<TcpInput>(), host, port);
+
+    public IInput Create(Protocol protocol, string host, int port)
     {
         return protocol switch
         {
-            Protocol.Tcp => throw new NotImplementedException(),
+            Protocol.Tcp => CreateTcpInput(host, port),
             Protocol.Udp => CreateUdpInput(host, port),
             _ => throw new ArgumentOutOfRangeException(nameof(protocol), protocol, null)
         };
