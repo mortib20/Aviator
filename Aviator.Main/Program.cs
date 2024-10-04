@@ -1,6 +1,7 @@
 using Aviator.Acars;
 using Aviator.Acars.Config;
 using Aviator.Network.Input;
+using Aviator.Network.Output;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,11 +9,12 @@ var acarsConfig = builder.Configuration.GetSection(AcarsConfig.Section).Get<Acar
 
 if (acarsConfig == null)
 {
-    throw new InvalidOperationException("Missing acars config");
+    throw new InvalidOperationException($"Missing {AcarsConfig.Section} config");
 }
 
 // Network
 builder.Services.AddSingleton<InputBuilder>();
+builder.Services.AddSingleton<OutputBuilder>();
 
 // Acars
 builder.Services.AddSingleton(acarsConfig);

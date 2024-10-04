@@ -8,23 +8,34 @@ namespace Aviator.Acars;
 public class AcarsIoManager(ILogger<AcarsIoManager> logger, AcarsConfig config, InputBuilder inputBuilder, OutputBuilder outputBuilder)
 {
     private readonly IInput _input = inputBuilder.Create(config.Input!.Protocol, config.Input.Host, config.Input.Port);
+    private readonly Dictionary<AcarsType, List<IOutput>> _outputs = CreateOutputs(config, outputBuilder);
 
-    private readonly Dictionary<AcarsType, List<IOutput>> _outputs = CreateOutputs();
-
-    private static Dictionary<AcarsType, List<IOutput>> CreateOutputs(AcarsConfig config)
+    private static Dictionary<AcarsType, List<IOutput>> CreateOutputs(AcarsConfig config, OutputBuilder outputBuilder)
     {
-        var outputEndpointConfigs = config.Outputs;
-        var outputs = new Dictionary<AcarsType, List<IOutput>>();
+        var outputsConfig = config!.Outputs;
 
-        // do output here
+        if (outputsConfig == null)
+        {
+            throw new InvalidOperationException(nameof(outputsConfig));
+        }
         
-        return outputs;
+        var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
+
+        return types.ToDictionary(type => type, type => outputsConfig.Where(x => x.Type == type)
+            .Select(x => outputBuilder.Create(x.Protocol, x.Host, x.Port))
+            .ToList());
     }
 
-    public Task StartInputAsync(InputHandler onReceivedAsync, CancellationToken cancellationToken = default)
+    public async Task StartInputAsync(InputHandler onReceivedAsync, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Start Input on {Endpoint}", config.Input);
         
-        return _input.ReceiveAsync(onReceivedAsync, cancellationToken);
+        await _input.ReceiveAsync(onReceivedAsync, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task WriteToTypeAsync(AcarsType acarsType, byte[] buffer,
+        CancellationToken cancellationToken = default)
+    {
+        await Task.Run(() => _outputs[acarsType].ToList().ForEach(s => s.WriteAsync(buffer, cancellationToken).ConfigureAwait(false)), cancellationToken).ConfigureAwait(false);
     }
 }

@@ -34,16 +34,18 @@ public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
         while (client.Connected)
         {
             var buffer = new byte[MaxBufferSize];
-            var receivedLength = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            var length = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-            if (receivedLength == 0 || !client.Connected)
+            if (length == 0 || !client.Connected)
             {
                 logger.LogInformation("Client disconnected from {RemoteEndPoint}", remoteEndPoint);
                 client.Close();
                 break;
             }
+
+            Console.WriteLine($"Rec {length} bytes from {remoteEndPoint}");
             
-            await handler.Invoke(buffer, cancellationToken);
+            handler.Invoke(buffer[..length].ToArray(), cancellationToken);
         }
     }
 }

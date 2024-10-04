@@ -5,6 +5,8 @@ namespace Aviator.Acars;
 
 public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManager) : BackgroundService
 {
+    private const int MinBytes = 128; 
+    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting {This}", this);
@@ -12,14 +14,14 @@ public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManage
         await ioManager.StartInputAsync(OnReceivedAsync, stoppingToken).ConfigureAwait(false);
     }
 
-    private static async Task OnReceivedAsync(byte[] bytes, CancellationToken cancellationToken)
+    private async Task OnReceivedAsync(byte[] bytes, CancellationToken cancellationToken)
     { 
-        if (bytes.Length < 128)
+        if (bytes.Length < MinBytes)
         {
             return;
         }
-        
+
         Console.WriteLine($"Received {bytes.Length} bytes");
-        await Task.CompletedTask;
+        await ioManager.WriteToTypeAsync(AcarsType.Vdl2, bytes, cancellationToken).ConfigureAwait(false);
     }
 }
