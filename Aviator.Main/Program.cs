@@ -7,10 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var acarsConfig = builder.Configuration.GetSection(AcarsConfig.Section).Get<AcarsConfig>();
 
-if (acarsConfig == null)
-{
-    throw new InvalidOperationException($"Missing {AcarsConfig.Section} config");
-}
+ArgumentNullException.ThrowIfNull(acarsConfig);
 
 // Network
 builder.Services.AddSingleton<InputBuilder>();

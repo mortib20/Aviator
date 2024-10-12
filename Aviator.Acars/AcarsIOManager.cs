@@ -13,11 +13,7 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, AcarsConfig config, 
     private static Dictionary<AcarsType, List<IOutput>> CreateOutputs(AcarsConfig config, OutputBuilder outputBuilder)
     {
         var outputsConfig = config!.Outputs;
-
-        if (outputsConfig == null)
-        {
-            throw new InvalidOperationException(nameof(outputsConfig));
-        }
+        ArgumentNullException.ThrowIfNull(outputsConfig);
         
         var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
 

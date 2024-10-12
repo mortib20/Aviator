@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Network.Output;
 
-public class UdpOutput(string host, int port, ILogger<UdpOutput> logger) : IOutput
+public sealed class UdpOutput(string host, int port, ILogger<UdpOutput> logger) : IOutput
 {
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
