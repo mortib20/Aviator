@@ -1,25 +1,21 @@
 ﻿using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace Aviator.Network.Output;
 
-public class UdpOutput(string host, int port) : IOutput
+public class UdpOutput(string host, int port, ILogger<UdpOutput> logger) : IOutput
 {
-    public async Task WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
+    public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try
         {
-            using var udpClient = new UdpClient();
+            using var udpClient = new UdpClient(host, port);
 
             await udpClient.SendAsync(buffer, buffer.Length).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // No handling needed UDP is fire and forget
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignore
+            logger.LogError(ex, "We call it unhandled error.");
         }
     }
 }

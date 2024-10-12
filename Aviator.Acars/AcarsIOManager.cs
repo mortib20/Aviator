@@ -36,6 +36,9 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, AcarsConfig config, 
     public async Task WriteToTypeAsync(AcarsType acarsType, byte[] buffer,
         CancellationToken cancellationToken = default)
     {
-        await Task.Run(() => _outputs[acarsType].ToList().ForEach(s => s.WriteAsync(buffer, cancellationToken).ConfigureAwait(false)), cancellationToken).ConfigureAwait(false);
+        foreach (var output in _outputs[acarsType])
+        {
+            await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

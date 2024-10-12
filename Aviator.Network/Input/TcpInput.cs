@@ -6,7 +6,7 @@ namespace Aviator.Network.Input;
 
 public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
 {
-    private const int MaxBufferSize = ushort.MaxValue;
+    private const int MaxBufferSize = UInt16.MaxValue;
     
     public async Task ReceiveAsync(InputHandler onReceive, CancellationToken cancellationToken = default)
     {
@@ -18,7 +18,7 @@ public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
         {
             var tcpClient = await tcpListener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
             
-            _ = Task.Run(() => HandleClientAsync(onReceive, tcpClient, cancellationToken), cancellationToken);
+            _ = Task.Run(async () => await HandleClientAsync(onReceive, tcpClient, cancellationToken).ConfigureAwait(false), cancellationToken);
         }
         
         tcpListener.Stop();
@@ -42,10 +42,8 @@ public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
                 client.Close();
                 break;
             }
-
-            Console.WriteLine($"Rec {length} bytes from {remoteEndPoint}");
             
-            handler.Invoke(buffer[..length].ToArray(), cancellationToken);
+            await handler.Invoke(buffer[..length].ToArray(), cancellationToken).ConfigureAwait(false);
         }
     }
 }

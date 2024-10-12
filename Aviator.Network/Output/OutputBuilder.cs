@@ -1,12 +1,12 @@
-﻿using Aviator.Network.Input;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Aviator.Network.Output;
 
-public class OutputBuilder : IBuilder<IOutput>
+public class OutputBuilder(ILoggerFactory loggerFactory) : IBuilder<IOutput>
 {
-    private static TcpOutput CreateTcpOutput(string host, int port) => new(host, port);
+    private TcpOutput CreateTcpOutput(string host, int port) => new(host, port, loggerFactory.CreateLogger<TcpOutput>());
 
-    private static UdpOutput CreateUdpOutput(string host, int port) => new(host, port);
+    private UdpOutput CreateUdpOutput(string host, int port) => new(host, port, loggerFactory.CreateLogger<UdpOutput>());
 
     public IOutput Create(Protocol protocol, string host, int port)
     {
