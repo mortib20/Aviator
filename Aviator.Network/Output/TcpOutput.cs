@@ -9,7 +9,9 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
     
     private TcpClient? _client;
     private bool _connected;
-    
+
+    public string EndPoint { get; init; } = $"{host}:{port}";
+
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try

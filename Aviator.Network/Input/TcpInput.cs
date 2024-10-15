@@ -6,8 +6,10 @@ namespace Aviator.Network.Input;
 
 public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
 {
-    private const int MaxBufferSize = UInt16.MaxValue;
-    
+    private const int MaxBufferSize = ushort.MaxValue;
+
+    public string EndPoint { get; init; } = $"{host}:{port}";
+
     public async Task ReceiveAsync(InputHandler onReceive, CancellationToken cancellationToken = default)
     {
         using var tcpListener = new TcpListener(IPAddress.Parse(host), port);
