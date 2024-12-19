@@ -1,4 +1,3 @@
-using Aviator.Acars.Config;
 using Aviator.Network.Input;
 using Aviator.Network.Output;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,12 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictio
     public async Task WriteToTypeAsync(AcarsType acarsType, byte[] buffer,
         CancellationToken cancellationToken = default)
     {
-        foreach (var output in outputs[acarsType])
+        if (!outputs.TryGetValue(acarsType, out var outputList))
+        {
+            return;
+        }
+        
+        foreach (var output in outputList)
         {
             await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         }

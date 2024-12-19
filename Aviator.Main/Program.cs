@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 var acarsConfig = builder.Configuration.GetSection(AcarsConfig.Section).Get<AcarsConfig>();
 
 ArgumentNullException.ThrowIfNull(acarsConfig);
+ArgumentNullException.ThrowIfNull(acarsConfig.InfluxDb);
 
 // Network
 builder.Services.AddSingleton<InputBuilder>();
@@ -15,6 +16,7 @@ builder.Services.AddSingleton<OutputBuilder>();
 
 // Acars
 builder.Services.AddSingleton(acarsConfig);
+builder.Services.AddSingleton<AcarsMetrics>(s => new AcarsMetrics(acarsConfig.InfluxDb));
 builder.Services.AddSingleton<AcarsIoManager>(s =>
 {
     ArgumentNullException.ThrowIfNull(acarsConfig.Input);
