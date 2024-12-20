@@ -40,7 +40,14 @@ public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManage
         
         await ioManager.WriteToTypeAsync((AcarsType)acarsType, bytes, cancellationToken).ConfigureAwait(false);
 
-        var b = new BasicAcars();
+        var b = new BasicAcars
+        {
+            Type = (AcarsType)acarsType,
+            Address = "3214",
+            Channel = "1234",
+            Time = default,
+            Message = string.Empty
+        };
         
         await metrics.Increase((AcarsType)acarsType, b, cancellationToken);
     }

@@ -14,7 +14,8 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig) : IAcarsMetrics
     {
         var point = PointData.Measurement("messages")
             .SetTag("type", type.ToString())
-            // TODO CHANNEL TIMESTAMP
+            .SetTag("channel", acars.Channel)
+            .SetTimestamp(acars.Time)
             .SetField("value", 1);
 
         await _client.WritePointAsync(point, cancellationToken: cancellationToken);
