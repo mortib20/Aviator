@@ -1,10 +1,12 @@
 using System.Text.Json.Nodes;
+using Aviator.Acars.Entities;
+using Aviator.Acars.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Aviator.Acars;
 
-public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManager, AcarsMetrics metrics) : BackgroundService
+public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManager, IAcarsMetrics metrics) : BackgroundService
 {
     private const int MinBytes = 0; 
     
@@ -37,7 +39,9 @@ public class AcarsService(ILogger<AcarsService> logger,  AcarsIoManager ioManage
         }
         
         await ioManager.WriteToTypeAsync((AcarsType)acarsType, bytes, cancellationToken).ConfigureAwait(false);
+
+        var b = new BasicAcars();
         
-        await metrics.Increase((AcarsType)acarsType, cancellationToken);
+        await metrics.Increase((AcarsType)acarsType, b, cancellationToken);
     }
 }

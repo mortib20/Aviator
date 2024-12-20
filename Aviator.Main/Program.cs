@@ -1,5 +1,6 @@
 using Aviator.Acars;
 using Aviator.Acars.Config;
+using Aviator.Acars.Metrics;
 using Aviator.Network.Input;
 using Aviator.Network.Output;
 
@@ -8,7 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 var acarsConfig = builder.Configuration.GetSection(AcarsConfig.Section).Get<AcarsConfig>();
 
 ArgumentNullException.ThrowIfNull(acarsConfig);
-ArgumentNullException.ThrowIfNull(acarsConfig.InfluxDb);
 
 // Network
 builder.Services.AddSingleton<InputBuilder>();
@@ -16,7 +16,16 @@ builder.Services.AddSingleton<OutputBuilder>();
 
 // Acars
 builder.Services.AddSingleton(acarsConfig);
-builder.Services.AddSingleton<AcarsMetrics>(s => new AcarsMetrics(acarsConfig.InfluxDb));
+
+var acarsMetricsList = new List<IAcarsMetrics>();
+
+if (acarsConfig.InfluxDb is not null && acarsConfig.InfluxDb!.Enabled)
+{
+    acarsMetricsList.Add(new InfluxDbMetrics(acarsConfig.InfluxDb));
+}
+
+builder.Services.AddSingleton<IAcarsMetrics>(s => new AcarsMetrics(acarsMetricsList));
+
 builder.Services.AddSingleton<AcarsIoManager>(s =>
 {
     ArgumentNullException.ThrowIfNull(acarsConfig.Input);
