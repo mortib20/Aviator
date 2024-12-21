@@ -6,9 +6,14 @@ namespace Aviator.Network.Output;
 public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) : IOutput, IDisposable
 {
     private static readonly TimeSpan ErrorTimeout = TimeSpan.FromSeconds(4);
-    
+
     private TcpClient? _client;
     private bool _connected;
+
+    public void Dispose()
+    {
+        Dispose(true);
+    }
 
     public string EndPoint { get; init; } = $"{host}:{port}";
 
@@ -23,32 +28,25 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
                 await _client.Client.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
                 _connected = true;
             }
-            
+
             await _client.GetStream().WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
             await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is IOException or SocketException)
         {
             _connected = false;
-            logger.LogWarning(ex, "Client failed to connect or got disconnected from {Host}:{Port}, waiting for {ErrorTimeout} seconds!",
+            logger.LogWarning(ex,
+                "Client failed to connect or got disconnected from {Host}:{Port}, waiting for {ErrorTimeout} seconds!",
                 host, port, ErrorTimeout.TotalSeconds);
             await Task.Delay(ErrorTimeout, cancellationToken).ConfigureAwait(false);
             await WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    public void Dispose()
-    {
-        Dispose(true);
-    }
-
     private void Dispose(bool disposing)
     {
-        if (!disposing)
-        {
-            return;
-        }
-        
+        if (!disposing) return;
+
         _client?.Dispose();
     }
 }

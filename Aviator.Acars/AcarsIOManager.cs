@@ -9,21 +9,15 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictio
     public async Task StartInputAsync(InputHandler onReceivedAsync, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Start Input on {Endpoint}", input.EndPoint);
-        
+
         await input.ReceiveAsync(onReceivedAsync, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task WriteToTypeAsync(AcarsType acarsType, byte[] buffer,
         CancellationToken cancellationToken = default)
     {
-        if (!outputs.TryGetValue(acarsType, out var outputList))
-        {
-            return;
-        }
-        
-        foreach (var output in outputList)
-        {
-            await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
-        }
+        if (!outputs.TryGetValue(acarsType, out var outputList)) return;
+
+        foreach (var output in outputList) await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
     }
 }

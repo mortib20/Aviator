@@ -2,9 +2,13 @@
 
 public class BasicAcars
 {
-    public AcarsType Type { get; set; }
-    public required string Address { get; set; }
-    public required string Channel { get; set; }
-    public DateTime Time { get; set; }
-    public string Message { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Station { get; set; } = string.Empty;
+    public string Freq { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public string Registration { get; set; } = string.Empty;
+    public string Flight { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public long Timestamp { get; set; }
 }

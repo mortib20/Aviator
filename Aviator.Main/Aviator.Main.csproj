@@ -7,15 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Aviator.Acars\Aviator.Acars.csproj" />
+        <ProjectReference Include="..\Aviator.Acars\Aviator.Acars.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="One_Sgp4" Version="1.1.0" />
+        <PackageReference Include="One_Sgp4" Version="1.1.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Config\" />
+        <Folder Include="Config\"/>
     </ItemGroup>
 
 </Project>

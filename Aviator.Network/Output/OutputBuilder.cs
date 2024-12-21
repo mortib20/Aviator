@@ -4,10 +4,6 @@ namespace Aviator.Network.Output;
 
 public class OutputBuilder(ILoggerFactory loggerFactory) : IBuilder<IOutput>
 {
-    private TcpOutput CreateTcpOutput(string host, int port) => new(host, port, loggerFactory.CreateLogger<TcpOutput>());
-
-    private UdpOutput CreateUdpOutput(string host, int port) => new(host, port, loggerFactory.CreateLogger<UdpOutput>());
-
     public IOutput Create(Protocol protocol, string host, int port)
     {
         return protocol switch
@@ -16,5 +12,15 @@ public class OutputBuilder(ILoggerFactory loggerFactory) : IBuilder<IOutput>
             Protocol.Udp => CreateUdpOutput(host, port),
             _ => throw new ArgumentOutOfRangeException(nameof(protocol), protocol, null)
         };
+    }
+
+    private TcpOutput CreateTcpOutput(string host, int port)
+    {
+        return new TcpOutput(host, port, loggerFactory.CreateLogger<TcpOutput>());
+    }
+
+    private UdpOutput CreateUdpOutput(string host, int port)
+    {
+        return new UdpOutput(host, port, loggerFactory.CreateLogger<UdpOutput>());
     }
 }

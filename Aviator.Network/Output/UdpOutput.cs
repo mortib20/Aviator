@@ -6,7 +6,7 @@ namespace Aviator.Network.Output;
 public sealed class UdpOutput(string host, int port, ILogger<UdpOutput> logger) : IOutput
 {
     public string EndPoint { get; init; } = $"{host}:{port}";
-    
+
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try

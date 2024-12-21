@@ -15,21 +15,24 @@ public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
         using var tcpListener = new TcpListener(IPAddress.Parse(host), port);
 
         tcpListener.Start();
-        
+
         while (!cancellationToken.IsCancellationRequested)
         {
             var tcpClient = await tcpListener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
-            
-            _ = Task.Run(async () => await HandleClientAsync(onReceive, tcpClient, cancellationToken).ConfigureAwait(false), cancellationToken);
+
+            _ = Task.Run(
+                async () => await HandleClientAsync(onReceive, tcpClient, cancellationToken).ConfigureAwait(false),
+                cancellationToken);
         }
-        
+
         tcpListener.Stop();
     }
 
-    private async Task HandleClientAsync(InputHandler handler, TcpClient client, CancellationToken cancellationToken = default)
+    private async Task HandleClientAsync(InputHandler handler, TcpClient client,
+        CancellationToken cancellationToken = default)
     {
         await using var stream = client.GetStream();
-        
+
         var remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
         logger.LogInformation("Client connected from {RemoteEndPoint}", remoteEndPoint);
 
@@ -44,7 +47,7 @@ public class TcpInput(ILogger<IInput> logger, string host, int port) : IInput
                 client.Close();
                 break;
             }
-            
+
             await handler.Invoke(buffer[..length].ToArray(), cancellationToken).ConfigureAwait(false);
         }
     }

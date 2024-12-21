@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="InfluxDB3.Client" Version="0.8.0" />
-        <PackageReference Include="One_Sgp4" Version="1.1.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="InfluxDB3.Client" Version="0.8.0"/>
+        <PackageReference Include="One_Sgp4" Version="1.1.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Aviator.Network\Aviator.Network.csproj" />
+        <ProjectReference Include="..\Aviator.Network\Aviator.Network.csproj"/>
     </ItemGroup>
 </Project>
