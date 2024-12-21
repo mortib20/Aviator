@@ -65,6 +65,11 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", acarsType);
         }
 
+        if (!AcarsTypeFinder.HasAcars(jsonAcars))
+        {
+            return;
+        }
+        
         var basicAcars = AcarsConverter.BasicAcarsFromType(bytes, acarsType);
 
         if (basicAcars is null) return;
