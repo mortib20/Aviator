@@ -1,43 +1,33 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Aviator.Acars.Entities;
 using Aviator.Acars.Entities.Acars;
-using Aviator.Acars.Entities.Aero;
 using Aviator.Acars.Entities.Hfdl;
 using Aviator.Acars.Entities.Vdl2;
 
-namespace Aviator.Acars;
+namespace Aviator.Acars.Entities;
 
 public abstract class AcarsConverter
 {
-    public static BasicAcars? BasicAcarsFromType(byte[] buffer, [DisallowNull] AcarsType? acarsType,
-        out double? sigLevel, out double? noiseLevel)
+    public static BasicAcars? BasicAcarsFromType(byte[] buffer, [DisallowNull] AcarsType? acarsType)
     {
-        sigLevel = null;
-        noiseLevel = null;
         switch (acarsType)
         {
             case AcarsType.Aero:
-                var jaero = JsonSerializer.Deserialize<Aero>(buffer);
+                var jaero = JsonSerializer.Deserialize<Aero.Aero>(buffer);
                 if (jaero is null) break;
                 return ConvertAero(jaero);
             case AcarsType.Vdl2:
                 var vdl2 = JsonSerializer.Deserialize<DumpVdl2>(buffer);
                 if (vdl2 is null) break;
-                sigLevel = vdl2.vdl2.sig_level;
-                noiseLevel = vdl2.vdl2.noise_level;
                 return ConvertDumpVdl2(vdl2);
             case AcarsType.Hfdl:
                 var hfdl = JsonSerializer.Deserialize<DumpHfdl>(buffer);
                 if (hfdl is null) break;
-                sigLevel = hfdl.hfdl.sig_level;
-                noiseLevel = hfdl.hfdl.noise_level;
                 return ConvertDumpHfdl(hfdl);
             case AcarsType.Acars:
                 var acars = JsonSerializer.Deserialize<Acarsdec>(buffer);
                 if (acars is null) break;
-                sigLevel = acars.level;
                 return ConvertAcarsdec(acars);
             case AcarsType.Iridium:
                 // not implemented
@@ -49,7 +39,7 @@ public abstract class AcarsConverter
         return null;
     }
 
-    private static BasicAcars ConvertAero(Aero aero)
+    private static BasicAcars ConvertAero(Aero.Aero aero)
     {
         return new BasicAcars
         {

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Aviator.Acars.Entities;
 using Aviator.Acars.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,14 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
     {
         logger.LogInformation("Starting {This}", this);
 
-        await ioManager.StartInputAsync(OnReceivedAsync, stoppingToken).ConfigureAwait(false);
+        try
+        {
+            await ioManager.StartInputAsync(OnReceivedAsync, stoppingToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to start input");
+        }
     }
 
     private async Task OnReceivedAsync(byte[] bytes, CancellationToken cancellationToken)
@@ -22,20 +30,34 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
         if (bytes.Length < MinBytes) // FIXME: After testing enable to prevent useless spamming
             return;
 
-        var acars = JsonNode.Parse(bytes);
+        JsonNode jsonAcars;
+        try
+        {
+            jsonAcars = JsonNode.Parse(bytes) ?? throw new InvalidOperationException();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Invalid JSON payload, Ignoring...");
+            return;
+        }
 
-        if (acars is null) return;
+        AcarsType acarsType;
+        try
+        {
+            acarsType = AcarsTypeFinder.Detect(jsonAcars) ?? throw new InvalidOperationException();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to detect ACARS type, Ignoring...");
+            return;
+        }
 
-        var acarsType = AcarsTypeFinder.Detect(acars);
+        await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
 
-        if (acarsType is null) return;
-
-        await ioManager.WriteToTypeAsync((AcarsType)acarsType, bytes, cancellationToken).ConfigureAwait(false);
-
-        var basicAcars = AcarsConverter.BasicAcarsFromType(bytes, acarsType, out _, out _);
+        var basicAcars = AcarsConverter.BasicAcarsFromType(bytes, acarsType);
 
         if (basicAcars is null) return;
 
-        await metrics.Increase((AcarsType)acarsType, basicAcars, cancellationToken);
+        await metrics.Increase(acarsType, basicAcars, cancellationToken);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Aviator.Acars;
+namespace Aviator.Acars.Entities;
 
 public abstract class AcarsTypeFinder
 {
