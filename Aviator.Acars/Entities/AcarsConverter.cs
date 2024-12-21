@@ -44,7 +44,7 @@ public abstract class AcarsConverter
         return new BasicAcars
         {
             Type = AcarsType.Aero.ToString(),
-            Freq = aero.app.ver,
+            Channel = aero.app.ver,
             Station = aero.station,
             Timestamp = aero.t.sec,
             Address = aero.isu.dst.addr,
@@ -60,7 +60,7 @@ public abstract class AcarsConverter
         return new BasicAcars
         {
             Type = AcarsType.Vdl2.ToString(),
-            Freq = vdl2.vdl2.freq.ToString(),
+            Channel = vdl2.vdl2.freq.ToString(),
             Address = vdl2.vdl2.avlc.src.addr,
             Flight = vdl2.vdl2.avlc.acars.flight,
             Label = vdl2.vdl2.avlc.acars.label,
@@ -77,7 +77,7 @@ public abstract class AcarsConverter
         {
             Type = AcarsType.Hfdl.ToString(),
             Station = hfdl.hfdl.station,
-            Freq = hfdl.hfdl.freq.ToString(),
+            Channel = hfdl.hfdl.freq.ToString(),
             Label = hfdl.hfdl.lpdu.hfnpdu.acars.label,
             Text = hfdl.hfdl.lpdu.hfnpdu.acars.msg_text,
             Registration = hfdl.hfdl.lpdu.hfnpdu.acars.reg,
@@ -93,7 +93,7 @@ public abstract class AcarsConverter
         {
             Type = AcarsType.Acars.ToString(),
             Station = acars.station_id,
-            Freq = $"{acars.freq.ToString(CultureInfo.InvariantCulture).Replace(".", "")}000",
+            Channel = $"{acars.freq.ToString(CultureInfo.InvariantCulture).Replace(".", "")}000",
             Label = acars.label,
             Text = acars.text,
             Registration = acars.tail,

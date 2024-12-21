@@ -17,12 +17,20 @@ builder.Services.AddSingleton<OutputBuilder>();
 // Acars
 builder.Services.AddSingleton(acarsConfig);
 
-var acarsMetricsList = new List<IAcarsMetrics>();
 
 if (acarsConfig.InfluxDb is not null && acarsConfig.InfluxDb!.Enabled)
-    acarsMetricsList.Add(new InfluxDbMetrics(acarsConfig.InfluxDb));
+{
+    builder.Services.AddSingleton<InfluxDbMetrics>(s => new InfluxDbMetrics(acarsConfig.InfluxDb, s.GetRequiredService<ILogger<InfluxDbMetrics>>()));
+}
 
-builder.Services.AddSingleton<IAcarsMetrics>(s => new AcarsMetrics(acarsMetricsList));
+builder.Services.AddSingleton<IAcarsMetrics>(s =>
+{
+    var acarsMetricsList = new List<IAcarsMetrics>()
+    {
+        s.GetRequiredService<InfluxDbMetrics>()
+    }; 
+    return new AcarsMetrics(acarsMetricsList);
+});
 
 builder.Services.AddSingleton<AcarsIoManager>(s =>
 {

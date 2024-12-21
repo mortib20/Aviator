@@ -19,9 +19,13 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
         {
             await ioManager.StartInputAsync(OnReceivedAsync, stoppingToken).ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            // no error
+        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to start input");
+            logger.LogError(ex, "Error occured while running Input");
         }
     }
 
@@ -52,7 +56,14 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             return;
         }
 
-        await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", acarsType);
+        }
 
         var basicAcars = AcarsConverter.BasicAcarsFromType(bytes, acarsType);
 
