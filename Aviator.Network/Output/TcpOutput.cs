@@ -34,7 +34,7 @@ public sealed class TcpOutput : IOutput, IDisposable
                 logger.LogInformation("Connecting to {A}", EndPoint);
                 _client = new TcpClient();
                 await _client.ConnectAsync(host, port);
-                _connected = _client.Connected;
+                _connected = true;
             }
             catch (Exception ex)
             {
