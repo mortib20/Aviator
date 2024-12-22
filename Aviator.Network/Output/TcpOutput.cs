@@ -7,7 +7,7 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 {
     private static readonly TimeSpan ErrorTimeout = TimeSpan.FromSeconds(4);
 
-    private TcpClient? _client;
+    private TcpClient _client = new(host, port);
     private bool _connected;
     private readonly SemaphoreSlim _connectionLock = new(1, 1);
     
@@ -29,12 +29,12 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
         try
         {
             // Ensure only one reconnect attempt occurs
-            if (_client is null || !_connected)
+            if (!_connected)
             {
                 await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    if (_client is null || !_connected) // Check again after acquiring the lock
+                    if (!_connected) // Check again after acquiring the lock
                     {
                         logger.LogInformation("Connecting to {Hostname}:{Port}", host, port);
                         _client = new TcpClient();
