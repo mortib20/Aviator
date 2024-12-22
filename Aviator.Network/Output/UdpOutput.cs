@@ -22,6 +22,6 @@ public sealed class UdpOutput(string host, int port, ILogger<UdpOutput> logger) 
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "We call it unhandled error.");
-        }
+        } // TODO maybe add exception handling here for if the ip of the service changes
     }
 }
