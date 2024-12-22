@@ -1,5 +1,7 @@
+using System.Collections.ObjectModel;
 using Aviator.Acars;
 using Aviator.Acars.Config;
+using Aviator.Acars.Database;
 using Aviator.Acars.Metrics;
 using Aviator.Network.Input;
 using Aviator.Network.Output;
@@ -13,46 +15,65 @@ public static class AcarsServiceExtension
         var acarsConfig = builder.Configuration.GetSection(AcarsConfig.Section).Get<AcarsConfig>();
         ArgumentNullException.ThrowIfNull(acarsConfig);
 
-        builder.Services.AddSingleton(acarsConfig);
-
-        if (acarsConfig.InfluxDb is not null && acarsConfig.InfluxDb!.Enabled)
-        {
-            builder.Services.AddSingleton<InfluxDbMetrics>(s => new InfluxDbMetrics(acarsConfig.InfluxDb, s.GetRequiredService<ILogger<InfluxDbMetrics>>()));
-        }
-
+        #region Metrics
         builder.Services.AddSingleton<IAcarsMetrics>(s =>
         {
-            var acarsMetricsList = new List<IAcarsMetrics>()
+            var metrics = new Collection<IAcarsMetrics>();
+            
+            if (acarsConfig.InfluxDb is not null && acarsConfig.InfluxDb!.Enabled)
             {
-                s.GetRequiredService<InfluxDbMetrics>()
-            };
-
-            var logger = s.GetRequiredService<ILogger<AcarsService>>();
+                metrics.Add(new InfluxDbMetrics(acarsConfig.InfluxDb, s.GetRequiredService<ILogger<InfluxDbMetrics>>()));
+            }
             
-            logger.LogInformation("Enabled Metric: {Types}", string.Join(',', acarsMetricsList.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
             
-            return new AcarsMetrics(acarsMetricsList);
+            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Metric: {Types}", string.Join(',', metrics.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
+            
+            return new AcarsMetrics(metrics);
         });
+        #endregion
+        
+        #region Database
 
-        builder.Services.AddSingleton<AcarsIoManager>(s =>
+        builder.Services.AddSingleton<IAcarsDatabase>(s =>
         {
-            ArgumentNullException.ThrowIfNull(acarsConfig.Input);
-            acarsConfig.Outputs ??= [];
+            var databases = new Collection<IAcarsDatabase>();
 
-            var input = s.GetRequiredService<InputBuilder>()
-                .Create(acarsConfig.Input.Protocol, acarsConfig.Input.Host, acarsConfig.Input.Port);
+            if (acarsConfig.MongoDb is not null && acarsConfig.MongoDb!.Enabled)
+            {
+                databases.Add(new AcarsMongoDatabase(acarsConfig.MongoDb));
+            }
+            
+            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Databases: {Types}", string.Join(',', databases.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
 
-
-            var outputsConfig = acarsConfig.Outputs;
-            var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
-            var outputs = types.ToDictionary(type => type, type => outputsConfig.Where(x => x.Type == type)
-                .Select(x => s.GetRequiredService<OutputBuilder>().Create(x.Protocol, x.Host, x.Port))
-                .ToList());
-
-            return new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputs);
+            return new AcarsDatabase(databases);
         });
-        builder.Services.AddHostedService<AcarsService>();
+        #endregion
+
+        #region HostedService
+        builder.Services.AddHostedService<AcarsService>(s => SetupAcarsService(s, acarsConfig));
+        #endregion
 
         return builder;
+    }
+
+    private static AcarsService SetupAcarsService(IServiceProvider s, AcarsConfig acarsConfig)
+    {
+        ArgumentNullException.ThrowIfNull(acarsConfig.Input);
+        acarsConfig.Outputs ??= [];
+
+        var input = s.GetRequiredService<InputBuilder>()
+            .Create(acarsConfig.Input.Protocol, acarsConfig.Input.Host, acarsConfig.Input.Port);
+
+        var outputsConfig = acarsConfig.Outputs;
+        var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
+        var outputs = types.ToDictionary(type => type, type => outputsConfig.Where(x => x.Type == type)
+            .Select(x => s.GetRequiredService<OutputBuilder>().Create(x.Protocol, x.Host, x.Port))
+            .AsEnumerable());
+
+        var logger = s.GetRequiredService<ILogger<AcarsService>>();
+        var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputs);
+
+        return new AcarsService(logger, acarsIoManager, s.GetRequiredService<IAcarsMetrics>(),
+            s.GetRequiredService<IAcarsDatabase>());
     }
 }

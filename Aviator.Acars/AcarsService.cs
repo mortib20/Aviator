@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Aviator.Acars.Database;
 using Aviator.Acars.Entities;
 using Aviator.Acars.Metrics;
 using Microsoft.Extensions.Hosting;
@@ -6,10 +7,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Acars;
 
-public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager, IAcarsMetrics metrics)
+public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager, IAcarsMetrics metrics, IAcarsDatabase database)
     : BackgroundService
 {
-    private const int MinBytes = 0;
+    private const int MinBytes = 128;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -31,7 +32,7 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
 
     private async Task OnReceivedAsync(byte[] bytes, CancellationToken cancellationToken)
     {
-        if (bytes.Length < MinBytes) // FIXME: After testing enable to prevent useless spamming
+        if (bytes.Length < MinBytes)
             return;
 
         JsonNode jsonAcars;
@@ -65,6 +66,15 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", acarsType);
         }
 
+        try
+        {
+            await database.InsertAsync(bytes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to save bytes in database!");
+        }
+
         if (!AcarsTypeFinder.HasAcars(jsonAcars))
         {
             return;
@@ -74,6 +84,6 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
 
         if (basicAcars is null) return;
 
-        await metrics.Increase(acarsType, basicAcars, cancellationToken);
+        await metrics.IncreaseAsync(acarsType, basicAcars, cancellationToken).ConfigureAwait(false);
     }
 }

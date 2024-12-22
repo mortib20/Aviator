@@ -2,10 +2,10 @@
 
 namespace Aviator.Acars.Metrics;
 
-public class AcarsMetrics(List<IAcarsMetrics> metricsList) : IAcarsMetrics
+public class AcarsMetrics(ICollection<IAcarsMetrics> metricsList) : IAcarsMetrics
 {
-    public async Task Increase(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
+    public async Task IncreaseAsync(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
     {
-        foreach (var metrics in metricsList) await metrics.Increase(type, acars, cancellationToken);
+        foreach (var metrics in metricsList) await metrics.IncreaseAsync(type, acars, cancellationToken);
     }
 }

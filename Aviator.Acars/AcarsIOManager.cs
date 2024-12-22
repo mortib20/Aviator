@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Acars;
 
-public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictionary<AcarsType, List<IOutput>> outputs)
+public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictionary<AcarsType, IEnumerable<IOutput>> outputs)
 {
     public async Task StartInputAsync(InputHandler onReceivedAsync, CancellationToken cancellationToken = default)
     {

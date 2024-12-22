@@ -4,5 +4,5 @@ namespace Aviator.Acars.Metrics;
 
 public interface IAcarsMetrics
 {
-    Task Increase(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default);
+    Task IncreaseAsync(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default);
 }

@@ -26,7 +26,7 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
 
     private bool _disabled;
 
-    public async Task Increase(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
+    public async Task IncreaseAsync(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
     {
         if (_disabled)
         {
