@@ -18,6 +18,9 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictio
     {
         if (!outputs.TryGetValue(acarsType, out var outputList)) return;
 
-        foreach (var output in outputList) await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        foreach (var output in outputList)
+        {
+            await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

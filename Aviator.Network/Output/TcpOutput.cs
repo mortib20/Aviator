@@ -9,7 +9,6 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 
     private TcpClient? _client;
     private bool _connected;
-    private SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
     
     public void Dispose()
     {
@@ -20,8 +19,6 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
-        await _semaphoreSlim.WaitAsync(cancellationToken);
-
         try
         {
             if (_client is null || !_connected)
@@ -42,15 +39,6 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
                 "Client failed to connect or got disconnected from {Host}:{Port}, waiting for {ErrorTimeout} seconds!",
                 host, port, ErrorTimeout.TotalSeconds);
             await Task.Delay(ErrorTimeout, cancellationToken).ConfigureAwait(false);
-            
-            logger.LogInformation("Connecting to {Hostname}:{Port}", host, port);
-            _client = new TcpClient();
-            await _client.Client.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
-            _connected = true;
-        }
-        finally
-        {
-            _semaphoreSlim.Release();
         }
     }
 

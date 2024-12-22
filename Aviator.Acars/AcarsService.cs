@@ -11,6 +11,7 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
     : BackgroundService
 {
     private const int MinBytes = 128;
+    private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -57,6 +58,7 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             return;
         }
 
+        await _semaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
@@ -64,6 +66,10 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", acarsType);
+        }
+        finally
+        {
+            _semaphoreSlim.Release();
         }
 
         try
