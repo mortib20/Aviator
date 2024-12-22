@@ -21,6 +21,11 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
+        if (_connectionLock.CurrentCount >= 1)
+        {
+            return;
+        }
+        
         try
         {
             // Ensure only one reconnect attempt occurs
