@@ -58,7 +58,7 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             return;
         }
 
-        await _semaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
+        _semaphoreSlim.Wait();
         try
         {
             await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
