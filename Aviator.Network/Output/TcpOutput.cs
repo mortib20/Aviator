@@ -21,7 +21,7 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
-        if (_connectionLock.CurrentCount >= 1)
+        if (_connectionLock.CurrentCount == 0)
         {
             return;
         }
