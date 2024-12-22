@@ -41,8 +41,9 @@ public sealed class TcpOutput : IOutput, IDisposable
                 _connected = false;
                 _logger.LogWarning(ex, "Client failed to connect or got disconnected from {Host}:{Port}, waiting for {ErrorTimeout} seconds!", _host, _port, ErrorTimeout.TotalSeconds);
             }
-            
         };
+        
+        _connectionTimer.Start();
     }
 
     public void Dispose()
