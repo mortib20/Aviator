@@ -1,8 +1,10 @@
+using System.Text.Json;
 using Aviator.Acars;
 using Aviator.Acars.Config;
 using Aviator.Acars.Metrics;
 using Aviator.Network.Input;
 using Aviator.Network.Output;
+using Microsoft.Extensions.Logging.Console;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,8 +53,14 @@ builder.Services.AddSingleton<AcarsIoManager>(s =>
 });
 builder.Services.AddHostedService<AcarsService>();
 
+builder.Logging.AddSimpleConsole(s =>
+{
+    s.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+    s.ColorBehavior = LoggerColorBehavior.Enabled;
+});
+
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => JsonSerializer.Serialize("Hello World!"));
 
 await app.RunAsync();

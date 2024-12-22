@@ -1,4 +1,5 @@
-﻿using Aviator.Acars.Config;
+﻿using System.Net;
+using Aviator.Acars.Config;
 using Aviator.Acars.Entities;
 using InfluxDB3.Client;
 using InfluxDB3.Client.Config;
@@ -23,8 +24,15 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
         Timeout = TimeSpan.FromSeconds(60)
     });
 
+    private bool _disabled;
+
     public async Task Increase(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
     {
+        if (_disabled)
+        {
+            return;
+        }
+        
         try
         {
             var point = PointData.Measurement("messages")
@@ -34,9 +42,14 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
 
             await _client.WritePointAsync(point, cancellationToken: cancellationToken);
         }
+        catch (InfluxDBApiException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            logger.LogWarning(ex, "Not authorized! We disable the Metrics for now, please adjust the config and restart the service. {Type} {Freq}", type.ToString(), acars.Channel);
+            _disabled = true;
+        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to write metric. {Type} {Freq}", type.ToString(), acars.Channel);
+            logger.LogWarning(ex, "Failed to write metric. {Type} {Freq}", type.ToString(), acars.Channel);
         }
     }
 }
