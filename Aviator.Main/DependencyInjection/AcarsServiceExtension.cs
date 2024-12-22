@@ -68,7 +68,7 @@ public static class AcarsServiceExtension
         var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
         var outputs = types.ToDictionary(type => type, type => outputsConfig.Where(x => x.Type == type)
             .Select(x => s.GetRequiredService<OutputBuilder>().Create(x.Protocol, x.Host, x.Port))
-            .AsEnumerable());
+            .ToList());
 
         var logger = s.GetRequiredService<ILogger<AcarsService>>();
         var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputs);

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Acars;
 
-public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictionary<AcarsType, IEnumerable<IOutput>> outputs)
+public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictionary<AcarsType, List<IOutput>> outputs)
 {
     public async Task StartInputAsync(InputHandler onReceivedAsync, CancellationToken cancellationToken = default)
     {
@@ -18,7 +18,7 @@ public class AcarsIoManager(ILogger<AcarsIoManager> logger, IInput input, Dictio
     {
         if (!outputs.TryGetValue(acarsType, out var outputList)) return;
 
-        foreach (var output in outputList)
+        foreach (var output in outputList.ToList())
         {
             await output.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         }
