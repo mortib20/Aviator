@@ -7,11 +7,10 @@ namespace Aviator.Network.Output;
 public sealed class TcpOutput : IOutput, IDisposable
 {
     private static readonly TimeSpan ErrorTimeout = TimeSpan.FromSeconds(4);
-    private static Timer _connectionTimer = new(ErrorTimeout);
+    private readonly Timer _connectionTimer = new(ErrorTimeout);
 
     private TcpClient? _client;
     private bool _connected;
-    private readonly SemaphoreSlim _connectionLock = new(1, 1);
     private readonly string _host;
     private readonly int _port;
     private readonly ILogger<TcpOutput> _logger;
@@ -32,6 +31,7 @@ public sealed class TcpOutput : IOutput, IDisposable
             
             try
             {
+                logger.LogInformation("Connecting to {A}", EndPoint);
                 _client = new TcpClient();
                 await _client.ConnectAsync(host, port);
                 _connected = _client.Connected;
@@ -49,7 +49,6 @@ public sealed class TcpOutput : IOutput, IDisposable
     public void Dispose()
     {
         Dispose(true);
-        _connectionLock.Dispose();
     }
 
     public string EndPoint { get; init; }
