@@ -42,7 +42,11 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
                 "Client failed to connect or got disconnected from {Host}:{Port}, waiting for {ErrorTimeout} seconds!",
                 host, port, ErrorTimeout.TotalSeconds);
             await Task.Delay(ErrorTimeout, cancellationToken).ConfigureAwait(false);
-            await WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+            
+            logger.LogInformation("Connecting to {Hostname}:{Port}", host, port);
+            _client = new TcpClient();
+            await _client.Client.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
+            _connected = true;
         }
         finally
         {
