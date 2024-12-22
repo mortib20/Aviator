@@ -9,10 +9,12 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
 
     private TcpClient? _client;
     private bool _connected;
+    private readonly SemaphoreSlim _connectionLock = new(1, 1);
     
     public void Dispose()
     {
         Dispose(true);
+        _connectionLock.Dispose();
     }
 
     public string EndPoint { get; init; } = $"{host}:{port}";
@@ -21,12 +23,24 @@ public sealed class TcpOutput(string host, int port, ILogger<TcpOutput> logger) 
     {
         try
         {
+            // Ensure only one reconnect attempt occurs
             if (_client is null || !_connected)
             {
-                logger.LogInformation("Connecting to {Hostname}:{Port}", host, port);
-                _client = new TcpClient();
-                await _client.Client.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
-                _connected = true;
+                await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (_client is null || !_connected) // Check again after acquiring the lock
+                    {
+                        logger.LogInformation("Connecting to {Hostname}:{Port}", host, port);
+                        _client = new TcpClient();
+                        await _client.Client.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
+                        _connected = true;
+                    }
+                }
+                finally
+                {
+                    _connectionLock.Release();
+                }
             }
 
             await _client.GetStream().WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
