@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
 namespace Aviator.Network.Output;
@@ -6,14 +7,17 @@ namespace Aviator.Network.Output;
 public sealed class UdpOutput(string host, int port, ILogger<UdpOutput> logger) : IOutput
 {
     public string EndPoint { get; init; } = $"{host}:{port}";
+    private IPEndPoint? _ipEndPoint;
 
     public async ValueTask WriteAsync(byte[] buffer, CancellationToken cancellationToken = default)
     {
         try
         {
-            using var udpClient = new UdpClient(host, port);
-
-            await udpClient.SendAsync(buffer, buffer.Length).ConfigureAwait(false);
+            _ipEndPoint ??= new IPEndPoint((await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false))[0], port);
+            
+            using var udpClient = new UdpClient();
+            
+            await udpClient.SendAsync(buffer, buffer.Length, _ipEndPoint).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
