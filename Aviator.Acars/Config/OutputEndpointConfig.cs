@@ -4,5 +4,5 @@ namespace Aviator.Acars.Config;
 
 public class OutputEndpointConfig : EndpointConfig
 {
-    public AcarsType Type { get; set; }
+    public List<AcarsType> Types { get; set; } = [];
 }

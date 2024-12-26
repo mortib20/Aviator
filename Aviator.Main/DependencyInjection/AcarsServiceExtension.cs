@@ -26,7 +26,7 @@ public static class AcarsServiceExtension
             }
             
             
-            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Metric: {Types}", string.Join(',', metrics.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
+            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Metric: {Types}", string.Join(", ", metrics.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
             
             return new AcarsMetrics(metrics);
         });
@@ -43,7 +43,7 @@ public static class AcarsServiceExtension
                 databases.Add(new AcarsMongoDatabase(acarsConfig.MongoDb));
             }
             
-            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Databases: {Types}", string.Join(',', databases.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
+            s.GetRequiredService<ILogger<AcarsService>>().LogInformation("Enabled Databases: {Types}", string.Join(", ", databases.Select(acarsMetrics => acarsMetrics.GetType()).ToList()));
 
             return new AcarsDatabase(databases);
         });
@@ -64,14 +64,20 @@ public static class AcarsServiceExtension
         var input = s.GetRequiredService<InputBuilder>()
             .Create(acarsConfig.Input.Protocol, acarsConfig.Input.Host, acarsConfig.Input.Port);
 
-        var outputsConfig = acarsConfig.Outputs;
-        var types = outputsConfig.Select(x => x.Type).Distinct().ToList();
-        var outputs = types.ToDictionary(type => type, type => outputsConfig.Where(x => x.Type == type)
-            .Select(x => s.GetRequiredService<OutputBuilder>().Create(x.Protocol, x.Host, x.Port))
-            .ToList());
+        var outputBuilder = s.GetRequiredService<OutputBuilder>();
+        var outputs = acarsConfig.Outputs.Select(selector: a => (a.Types, outputBuilder.Create(a.Protocol, a.Host, a.Port))).ToList();
+        
+        var outputDictionary = Enum
+            .GetValuesAsUnderlyingType<AcarsType>()
+            .Cast<AcarsType>()
+            .ToDictionary<AcarsType, AcarsType, List<IOutput>>(k => k, v =>
+            {
+                return outputs.Where(b => b.Types.Contains(v)).Select(o => o.Item2).ToList();
+            });
 
+        
         var logger = s.GetRequiredService<ILogger<AcarsService>>();
-        var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputs);
+        var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputDictionary);
 
         return new AcarsService(logger, acarsIoManager, s.GetRequiredService<IAcarsMetrics>(),
             s.GetRequiredService<IAcarsDatabase>());
