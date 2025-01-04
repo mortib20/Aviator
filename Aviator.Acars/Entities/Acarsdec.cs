@@ -1,4 +1,4 @@
-namespace Aviator.Acars.Entities.Acars;
+namespace Aviator.Acars.Entities;
 
 public class Acarsdec
 {

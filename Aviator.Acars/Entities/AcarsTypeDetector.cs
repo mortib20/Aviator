@@ -16,7 +16,7 @@ public abstract class AcarsTypeFinder
 
             if (IsVdl2(json)) return AcarsType.Vdl2;
 
-            // TODO add Iridium
+            if (IsIridium(json)) return AcarsType.Iridium;
         }
         catch (Exception ex)
         {
@@ -45,10 +45,19 @@ public abstract class AcarsTypeFinder
     {
         return json?["vdl2"]?["app"]?["name"]?.ToString() == "dumpvdl2";
     }
+    
+    private static bool IsIridium(JsonNode json)
+    {
+        return json?["app"]?["name"]?.ToString() == "iridium-toolkit";
+    }
 
     public static bool HasAcars(JsonNode json)
     {
-        return json["vdl2"]?["avlc"]?["acars"] is not null || json["hfdl"]?["lpdu"]?["hfnpdu"]?["acars"] is not null ||
-               json["isu"]?["acars"] is not null || json["text"] is not null;
+        var vdl2 = json["vdl2"]?["avlc"]?["acars"] is not null;
+        var hfdl = json["hfdl"]?["lpdu"]?["hfnpdu"]?["acars"] is not null;
+        var jaero = json["isu"]?["acars"] is not null;
+        var acars = json["text"] is not null;
+        var iridium = json["acars"]?["text"] is not null;
+        return vdl2 || hfdl || jaero || acars || iridium;
     }
 }

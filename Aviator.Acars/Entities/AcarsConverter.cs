@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Aviator.Acars.Entities.Acars;
 using Aviator.Acars.Entities.Hfdl;
 using Aviator.Acars.Entities.Vdl2;
+using Type = Aviator.Acars.Entities.Hfdl.Type;
 
 namespace Aviator.Acars.Entities;
 
@@ -30,8 +30,9 @@ public abstract class AcarsConverter
                 if (acars is null) break;
                 return ConvertAcarsdec(acars);
             case AcarsType.Iridium:
-                // not implemented
-                break;
+                var iridium = JsonSerializer.Deserialize<IridiumAcars>(buffer);
+                if (iridium is null) break;
+                return ConvertIridium(iridium);
             default:
                 throw new ArgumentOutOfRangeException(acarsType.ToString());
         }
@@ -100,6 +101,22 @@ public abstract class AcarsConverter
             Flight = acars.flight,
             Address = string.Empty,
             Timestamp = (int)acars.timestamp
+        };
+    }
+
+    private static BasicAcars ConvertIridium(IridiumAcars iridiumAcars)
+    {
+        return new BasicAcars
+        {
+            Type = AcarsType.Iridium.ToString(),
+            Station = iridiumAcars.source.station_id,
+            Channel = iridiumAcars.freq.ToString(),
+            Label = iridiumAcars.acars.label,
+            Text = iridiumAcars.acars.text,
+            Registration = iridiumAcars.acars.tail,
+            Flight = "",
+            Address = "",
+            Timestamp = DateTime.Parse(iridiumAcars.acars.timestamp, null, System.Globalization.DateTimeStyles.RoundtripKind).Millisecond
         };
     }
 }
