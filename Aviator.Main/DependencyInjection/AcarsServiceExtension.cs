@@ -66,17 +66,24 @@ public static class AcarsServiceExtension
 
         var outputBuilder = s.GetRequiredService<OutputBuilder>();
         var outputs = acarsConfig.Outputs.Select(selector: a => (a.Types, outputBuilder.Create(a.Protocol, a.Host, a.Port))).ToList();
-        
-        var outputDictionary = Enum
+
+        var types = Enum
             .GetValuesAsUnderlyingType<AcarsType>()
-            .Cast<AcarsType>()
+            .Cast<AcarsType>().ToList();
+        
+        var outputDictionary = types
             .ToDictionary<AcarsType, AcarsType, List<IOutput>>(k => k, v =>
             {
                 return outputs.Where(b => b.Types.Contains(v)).Select(o => o.Item2).ToList();
             });
 
-        
         var logger = s.GetRequiredService<ILogger<AcarsService>>();
+        
+        foreach (var type in types)
+        {
+            logger.LogInformation("Sending {Types} to: {Outputs}", type, string.Join(", ", outputDictionary[type].Select(f => f.EndPoint).ToList()));
+        }
+
         var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputDictionary);
 
         return new AcarsService(logger, acarsIoManager, s.GetRequiredService<IAcarsMetrics>(),
