@@ -78,11 +78,10 @@ public static class AcarsServiceExtension
             });
 
         var logger = s.GetRequiredService<ILogger<AcarsService>>();
+
         
-        foreach (var type in types)
-        {
-            logger.LogInformation("Sending {Types} to: {Outputs}", type, string.Join(", ", outputDictionary[type].Select(f => f.EndPoint).ToList()));
-        }
+        
+        logger.LogInformation("{B}", string.Join(Environment.NewLine, types.Select(t => $"Sending {t} to: {string.Join(", ", outputDictionary[t].Select(f => f.EndPoint).ToList())}")));
 
         var acarsIoManager = new AcarsIoManager(s.GetRequiredService<ILogger<AcarsIoManager>>(), input, outputDictionary);
 
