@@ -40,6 +40,24 @@ public abstract class AcarsConverter
         return null;
     }
 
+    static long RoundToFirstFourDigits(long num)
+    {
+        // Get the number of digits in the number
+        int numberOfDigits = (int)Math.Floor(Math.Log10(num) + 1);
+
+        // Calculate the power of 10 needed to round off the digits after the first four
+        int power = numberOfDigits - 4;
+
+        if (power > 0)
+        {
+            long factor = (long)Math.Pow(10, power);
+            return (num / factor) * factor; // Keep only the first four digits
+        }
+
+        // If the number has 4 or fewer digits, return as is
+        return num;
+    }
+
     private static BasicAcars ConvertAero(Aero.Aero aero)
     {
         return new BasicAcars
@@ -110,7 +128,7 @@ public abstract class AcarsConverter
         {
             Type = AcarsType.Iridium.ToString(),
             Station = iridiumAcars.source.station_id,
-            Channel = iridiumAcars.freq.ToString(),
+            Channel = RoundToFirstFourDigits(iridiumAcars.freq).ToString(),
             Label = iridiumAcars.acars.label,
             Text = iridiumAcars.acars.text,
             Registration = iridiumAcars.acars.tail,
