@@ -20,6 +20,7 @@ public class AcarsMongoDatabase(MongoDbConfig config) : IAcarsDatabase
 
     public async Task InsertAsync(byte[] bytes, CancellationToken cancellationToken = default)
     {
-        await SaveAcarsAsBsonAsync(System.Text.Encoding.Default.GetString(bytes), cancellationToken).ConfigureAwait(false);
+        var byteString = System.Text.Encoding.Default.GetString(bytes);
+        await SaveAcarsAsBsonAsync(byteString, cancellationToken).ConfigureAwait(false);
     }
 }

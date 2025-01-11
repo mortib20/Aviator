@@ -20,10 +20,6 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
         {
             await ioManager.StartInputAsync(OnReceivedAsync, stoppingToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
-        {
-            // no error
-        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occured while running Input");
@@ -33,8 +29,11 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
     private async Task OnReceivedAsync(byte[] bytes, CancellationToken cancellationToken)
     {
         if (bytes.Length < MinBytes)
+        {
+            logger.LogWarning("Received payload to small!");
             return;
-
+        }
+        
         JsonNode jsonAcars;
         try
         {
