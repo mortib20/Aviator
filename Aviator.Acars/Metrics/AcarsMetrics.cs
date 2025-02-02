@@ -4,8 +4,8 @@ namespace Aviator.Acars.Metrics;
 
 public class AcarsMetrics(ICollection<IAcarsMetrics> metricsList) : IAcarsMetrics
 {
-    public async Task IncreaseAsync(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
+    public async Task IncreaseAsync(AirFrame frame, CancellationToken cancellationToken = default)
     {
-        foreach (var metrics in metricsList) await metrics.IncreaseAsync(type, acars, cancellationToken);
+        foreach (var metrics in metricsList) await metrics.IncreaseAsync(frame, cancellationToken);
     }
 }

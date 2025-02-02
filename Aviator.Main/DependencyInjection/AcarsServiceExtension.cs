@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Aviator.Acars;
 using Aviator.Acars.Config;
 using Aviator.Acars.Database;
+using Aviator.Acars.Entities;
 using Aviator.Acars.Metrics;
 using Aviator.Network.Input;
 using Aviator.Network.Output;
@@ -76,19 +77,19 @@ public static class AcarsServiceExtension
             s.GetRequiredService<IAcarsDatabase>());
     }
 
-    private static Dictionary<AcarsType,List<IOutput>> CreateOutputDictionary(IServiceProvider s, List<OutputEndpointConfig> acarsConfig)
+    private static Dictionary<SourceType,List<IOutput>> CreateOutputDictionary(IServiceProvider s, List<OutputEndpointConfig> acarsConfig)
     {
         var outputBuilder = s.GetRequiredService<OutputBuilder>();
         var outputsTuple = acarsConfig
             .Select(selector: a => (a.Types, outputBuilder.Create(a.Protocol, a.Host, a.Port))).ToList();
         
-        var acarsTypes = Enum.GetValues<AcarsType>().ToList();
+        var frameTypes = Enum.GetValues<SourceType>().ToList();
 
-        var outputDictionary = acarsTypes
-            .ToDictionary<AcarsType, AcarsType, List<IOutput>>(acarsType => acarsType, acarsType => outputsTuple.Where(b => b.Types.Contains(acarsType)).Select(o => o.Item2).ToList());
+        var outputDictionary = frameTypes
+            .ToDictionary<SourceType, SourceType, List<IOutput>>(frameType => frameType, frameType => outputsTuple.Where(b => b.Types.Contains(frameType)).Select(o => o.Item2).ToList());
         
         var logger = s.GetRequiredService<ILogger<AcarsService>>();
-        logger.LogInformation("{B}", string.Join(Environment.NewLine, acarsTypes.Select(t => $"Sending {t} to: {string.Join(", ", outputDictionary[t].Select(f => f.EndPoint).ToList())}")));
+        logger.LogInformation("{B}", string.Join(Environment.NewLine, frameTypes.Select(t => $"Sending {t} to: {string.Join(", ", outputDictionary[t].Select(f => f.EndPoint).ToList())}")));
         
         return outputDictionary;
     }

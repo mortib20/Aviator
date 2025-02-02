@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using Aviator.Acars.Config;
 using Aviator.Acars.Entities;
 using InfluxDB3.Client;
@@ -8,16 +9,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Aviator.Acars.Metrics;
 
-public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetrics> logger)
-    : IAcarsMetrics
+public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetrics> logger): IAcarsMetrics
 {
-    private readonly InfluxDBClient _client = new(new ClientConfig()
+    private readonly InfluxDBClient _client = new(new ClientConfig
     {
         Host = influxConfig.Url,
         Organization = influxConfig.Organization,
         Database = influxConfig.Bucket,
         Token = influxConfig.Token,
-        WriteOptions = new WriteOptions()
+        WriteOptions = new WriteOptions
         {
             Precision = WritePrecision.S,
         },
@@ -26,7 +26,7 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
 
     private bool _disabled;
 
-    public async Task IncreaseAsync(AcarsType type, BasicAcars acars, CancellationToken cancellationToken = default)
+    public async Task IncreaseAsync(AirFrame frame, CancellationToken cancellationToken = default)
     {
         if (_disabled)
         {
@@ -35,21 +35,24 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
         
         try
         {
-            var point = PointData.Measurement("messages")
-                .SetTag("type", type.ToString())
-                .SetTag("channel", acars.Channel)
+            var point = PointData.Measurement("frames")
+                .SetTag("sourceType", frame.SourceType.ToString())
+                .SetTag("frameType", frame.FrameType.ToString())
+                .SetTag("channel", frame.Channel)
+                .SetField("sigLevel", frame.SigLevel)
+                .SetField("noiseLevel", frame.NoiseLevel)
                 .SetField("value", 1);
 
             await _client.WritePointAsync(point, cancellationToken: cancellationToken);
         }
         catch (InfluxDBApiException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
-            logger.LogWarning(ex, "Not authorized! We disable the Metrics for now, please adjust the config and restart the service. {Type} {Freq}", type.ToString(), acars.Channel);
+            logger.LogWarning(ex, "Not authorized! We disable the Metrics for now, please adjust the config and restart the service. {@Frame}", frame);
             _disabled = true;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to write metric. {Type} {Freq}", type.ToString(), acars.Channel);
+            logger.LogWarning(ex, "Failed to write metric. {@Frame}", frame);
         }
     }
 }

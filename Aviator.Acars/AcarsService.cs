@@ -45,24 +45,24 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
             return;
         }
 
-        AcarsType acarsType;
+        SourceType sourceType;
         try
         {
-            acarsType = AcarsTypeFinder.Detect(jsonAcars) ?? throw new InvalidOperationException();
+            sourceType = SourceTypeFinder.Detect(jsonAcars) ?? throw new InvalidOperationException();
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to detect ACARS type, Ignoring...");
+            logger.LogWarning(ex, "Failed to detect Frame type, ignoring...");
             return;
         }
 
         try
         {
-            await ioManager.WriteToTypeAsync(acarsType, bytes, cancellationToken).ConfigureAwait(false);
+            await ioManager.WriteToTypeAsync(sourceType, bytes, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", acarsType);
+            logger.LogError(ex, "Error occured while trying to write to output of {AcarsType}", sourceType);
         }
 
         try
@@ -73,16 +73,17 @@ public class AcarsService(ILogger<AcarsService> logger, AcarsIoManager ioManager
         {
             logger.LogError(ex, "Failed to save bytes in database!");
         }
-
-        if (!AcarsTypeFinder.HasAcars(jsonAcars))
-        {
-            return;
-        }
         
-        var basicAcars = AcarsConverter.BasicAcarsFromType(bytes, acarsType);
+        var airFrame = AirFrameConverter.FromType(bytes, sourceType);
 
-        if (basicAcars is null) return;
 
-        await metrics.IncreaseAsync(acarsType, basicAcars, cancellationToken).ConfigureAwait(false);
+        if (airFrame is null) return;
+
+        if (SourceTypeFinder.HasAcars(jsonAcars))
+        {
+            airFrame.FrameType = FrameType.Acars;
+        }
+
+        await metrics.IncreaseAsync(airFrame, cancellationToken).ConfigureAwait(false);
     }
 }

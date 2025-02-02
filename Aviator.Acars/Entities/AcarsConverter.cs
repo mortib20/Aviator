@@ -134,7 +134,7 @@ public abstract class AcarsConverter
             Registration = iridiumAcars.acars.tail,
             Flight = "",
             Address = "",
-            Timestamp = DateTime.Parse(iridiumAcars.acars.timestamp, null, System.Globalization.DateTimeStyles.RoundtripKind).Millisecond
+            Timestamp = DateTime.Parse(iridiumAcars.acars.timestamp, null, DateTimeStyles.RoundtripKind).Millisecond
         };
     }
 }

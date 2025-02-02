@@ -2,21 +2,21 @@
 
 namespace Aviator.Acars.Entities;
 
-public abstract class AcarsTypeFinder
+public abstract class SourceTypeFinder
 {
-    public static AcarsType? Detect(JsonNode json)
+    public static SourceType? Detect(JsonNode json)
     {
         try
         {
-            if (IsAero(json)) return AcarsType.Aero;
+            if (IsAero(json)) return SourceType.Aero;
 
-            if (IsAcars(json)) return AcarsType.Acars;
+            if (IsAcars(json)) return SourceType.Acars;
 
-            if (IsHfdl(json)) return AcarsType.Hfdl;
+            if (IsHfdl(json)) return SourceType.Hfdl;
 
-            if (IsVdl2(json)) return AcarsType.Vdl2;
+            if (IsVdl2(json)) return SourceType.Vdl2;
 
-            if (IsIridium(json)) return AcarsType.Iridium;
+            if (IsIridium(json)) return SourceType.Iridium;
         }
         catch (Exception ex)
         {

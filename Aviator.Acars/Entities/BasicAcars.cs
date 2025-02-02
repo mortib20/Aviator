@@ -12,3 +12,30 @@ public class BasicAcars
     public string Address { get; set; } = string.Empty;
     public long Timestamp { get; set; }
 }
+
+public enum SourceType
+{
+    Acars,
+    Vdl2,
+    Hfdl,
+    Aero,
+    Iridium
+}
+
+public enum FrameType
+{
+    Undefined,
+    Acars,
+}
+
+public class AirFrame
+{
+    public SourceType SourceType { get; set; }
+    public FrameType FrameType { get; set; } = FrameType.Undefined;
+    public required string Station { get; set; }
+    public required string Channel { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
+
+    public double SigLevel { get; set; } = 0;
+    public double NoiseLevel { get; set; } = 0;
+}
