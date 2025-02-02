@@ -113,7 +113,8 @@ public abstract class AirFrameConverter
             SourceType = SourceType.Iridium,
             Station = iridiumAcars.source.station_id,
             Channel = RoundToFirstFourDigits(iridiumAcars.freq).ToString(),
-            Timestamp = DateTimeOffset.FromUnixTimeSeconds(DateTime.Parse(iridiumAcars.acars.timestamp, null, DateTimeStyles.RoundtripKind).Second)
+            Timestamp = DateTimeOffset.FromUnixTimeSeconds(DateTime.Parse(iridiumAcars.acars.timestamp, null, DateTimeStyles.RoundtripKind).Second),
+            SigLevel = iridiumAcars.level
         };
     }
 }
