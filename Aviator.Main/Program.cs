@@ -17,4 +17,4 @@ var app = builder.Build();
 
 app.MapGet("/", () => JsonSerializer.Serialize("Hello World!"));
 
-await app.RunAsync();
+await app.RunAsync().ConfigureAwait(false);

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using Aviator.Acars.Config;
 using Aviator.Acars.Entities;
 using InfluxDB3.Client;
@@ -19,7 +18,7 @@ public class InfluxDbMetrics(InfluxDbConfig influxConfig, ILogger<InfluxDbMetric
         Token = influxConfig.Token,
         WriteOptions = new WriteOptions
         {
-            Precision = WritePrecision.S,
+            Precision = WritePrecision.S
         },
         Timeout = TimeSpan.FromSeconds(60)
     });

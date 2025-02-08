@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Aviator.Acars.Database;
 
 public class AcarsDatabase(ICollection<IAcarsDatabase> acarsDatabases) : IAcarsDatabase

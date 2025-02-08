@@ -1,8 +1,6 @@
 using Aviator.Acars.Config;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Compression;
-using MongoDB.Driver.Core.Configuration;
 
 namespace Aviator.Acars.Database;
 
